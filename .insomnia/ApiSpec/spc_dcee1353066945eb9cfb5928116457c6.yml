@@ -1,7 +1,7 @@
 _id: spc_dcee1353066945eb9cfb5928116457c6
 type: ApiSpec
 parentId: wrk_f7ecf09928c242c083b5d6c63978b829
-modified: 1656151316581
+modified: 1656152495857
 created: 1656056752216
 fileName: ft_transcendance.yaml
 contents: "openapi: 3.0.0
@@ -87,7 +87,7 @@ contents: "openapi: 3.0.0
 
   \      security:
 
-  \        - bearerAuth: []
+  \        - Intra42: []
 
   \      responses:
 
