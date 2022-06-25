@@ -1,0 +1,55 @@
+_id: spc_dcee1353066945eb9cfb5928116457c6
+type: ApiSpec
+parentId: wrk_f7ecf09928c242c083b5d6c63978b829
+modified: 1656149345029
+created: 1656056752216
+fileName: ft_transcendance.yaml
+contents: "openapi: 3.0.0
+
+  info:
+
+  \  title: Transcendance Backend API
+
+  \  version: 0.0.1rc
+
+  \ \ 
+
+  paths:
+
+  \  /auth/login:
+
+  \    get:
+
+  \      summary: Récupérer le JWT
+
+  \      description: Authentification de la personne sur l'API de 42
+
+  \      responses:
+
+  \        \"301\":\ 
+
+  \          description: Redirection sur la page de connexion de l'intra
+
+  \        \"200\":
+
+  \          description: Authentification du client ok.
+
+  \          content:
+
+  \            application/json:
+
+  \              schema:
+
+  \                type: object
+
+  \                properties:
+
+  \                  access_token:
+
+  \                    type: string
+
+  \                    description: JWT permettant l'auth d'un utilisateur sur
+  les prochaines requêtes
+
+  \                  "
+contentType: yaml
