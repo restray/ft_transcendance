@@ -1,7 +1,7 @@
 _id: spc_dcee1353066945eb9cfb5928116457c6
 type: ApiSpec
 parentId: wrk_f7ecf09928c242c083b5d6c63978b829
-modified: 1656149345029
+modified: 1656151316581
 created: 1656056752216
 fileName: ft_transcendance.yaml
 contents: "openapi: 3.0.0
@@ -11,6 +11,28 @@ contents: "openapi: 3.0.0
   \  title: Transcendance Backend API
 
   \  version: 0.0.1rc
+
+  \\ 
+
+  servers:
+
+  \  - url: \"http://localhost:3000\"
+
+  \    description: Local Backend API
+
+  \ \ 
+
+  components:
+
+  \  securitySchemes:
+
+  \    Intra42:
+
+  \      type: http
+
+  \      scheme: bearer
+
+  \      bearerFormat: JWT
 
   \ \ 
 
@@ -26,7 +48,11 @@ contents: "openapi: 3.0.0
 
   \      responses:
 
-  \        \"301\":\ 
+  \        \"401\":
+
+  \          description: Necessité de se connecter avec Intra
+
+  \        \"302\":\ 
 
   \          description: Redirection sur la page de connexion de l'intra
 
@@ -51,5 +77,57 @@ contents: "openapi: 3.0.0
   \                    description: JWT permettant l'auth d'un utilisateur sur
   les prochaines requêtes
 
-  \                  "
+  \  /auth/user:
+
+  \    get:
+
+  \      summary: Récupérer les informations de l'utilisateur connecte
+
+  \      description: Grace au Token JWT, récupérer les informations
+
+  \      security:
+
+  \        - bearerAuth: []
+
+  \      responses:
+
+  \        \"401\":
+
+  \          description: Nécessité de se connecter grâce à un JWT Token
+
+  \        \"200\":
+
+  \          description: Les informations de l'utilisateur connecté en JSON
+
+  \          content:
+
+  \            application/json:
+
+  \              schema:
+
+  \                type: object
+
+  \                properties:
+
+  \                  id:
+
+  \                    type: integer
+
+  \                    minimum: 0
+
+  \                    description: >
+
+  \                      L'identifiant unique de l'utilisateur pour le backend
+
+  \                  name:
+
+  \                    type: string
+
+  \                    description: >
+
+  \                      Le nom de la personne connectée
+
+  \               \ 
+
+  \              "
 contentType: yaml
