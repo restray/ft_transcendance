@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+</head>
+
+<body>
+    <div>
+        <input type="text" name="token" id="token">
+        <button id="login">Login</button>
+    </div>
+
+    <hr>
+
+    <div>
+        <select name="status" id="status">
+            <option value="ONLINE">ONLINE</option>
+            <option value="AWAY">AWAY</option>
+            <option value="PLAYING">PLAYING</option>
+            <option value="OFFLINE">OFFLINE</option>
+            <option value="invalide">invalide</option>
+        </select>
+        <button id="updateStatus">Update Status</button>
+    </div>
+
+    <hr>
+
+    <div>
+        <input type="number" name="channel" id="channel" placeholder="channel (id)">
+        <input type="text" name="message" id="message" placeholder="message">
+        <button id="sendMessage">Send</button>
+        <button id="joinChannel">Join Channel</button>
+        <button id="leaveChannel">Leave Channel</button>
+    </div>
+
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"
+        integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H"
+        crossorigin="anonymous"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>
