@@ -33,13 +33,14 @@ export class StatusGateway implements NestGateway {
   @WebSocketServer()
   server: Server;
 
-  afterInit(server) {
+  async afterInit(server) {
     const middle = WSAuthMiddleware(
       this.jwtService,
       this.userService,
       this.configService,
     );
     server.use(middle);
+    await this.userService.setAllUsersOffline();
   }
 
   async handleConnection(client: AuthSocket) {
@@ -48,30 +49,30 @@ export class StatusGateway implements NestGateway {
     const friends = await this.friendsService.friends(client.user);
     friends.forEach((element) => {
       if (element.receiver.id != client.user.id) {
-        client.join(element.receiver.name);
+        client.join('' + element.receiver.id);
       } else {
-        client.join(element.requester.name);
+        client.join('' + element.requester.id);
       }
     });
 
     await this.userService.updateStatus(client.user, Status.ONLINE);
     this.server
-      .to(client.user.name)
-      .emit('status', client.user.name, Status.ONLINE);
+      .to('' + client.user.id)
+      .emit('status', client.user.id, Status.ONLINE);
   }
 
   async handleDisconnect(client: AuthSocket) {
     await this.userService.updateStatus(client.user, Status.OFFLINE);
 
     this.server
-      .to(client.user.name)
-      .emit('status', client.user.name, Status.OFFLINE);
+      .to('' + client.user.id)
+      .emit('status', client.user.id, Status.OFFLINE);
 
     const friends = await this.friendsService.relations(client.user);
     friends.forEach((element) => {
       if (element.receiver.id != client.user.id)
-        client.leave(element.receiver.name);
-      else client.leave(element.requester.name);
+        client.leave('' + element.receiver.name);
+      else client.leave('' + element.requester.name);
     });
   }
 
@@ -86,8 +87,8 @@ export class StatusGateway implements NestGateway {
     @ConnectedSocket() client: AuthSocket,
   ) {
     await this.server
-      .to(client.user.name)
-      .emit('status', client.user.name, data);
+      .to('' + client.user.id)
+      .emit('status', client.user.id, data);
   }
 
   async newFriend(user1: User, user2: User) {
@@ -97,7 +98,7 @@ export class StatusGateway implements NestGateway {
       sockets
         .filter((u) => u.data.user.id == u1.id)
         .forEach(async (socket) => {
-          await socket.join(u2.name);
+          await socket.join('' + u2.id);
           await socket.emit('new', {
             id: u2.id,
             name: u2.name,
@@ -118,12 +119,9 @@ export class StatusGateway implements NestGateway {
       sockets
         .filter((u) => u.data.user.id == u1.id)
         .forEach(async (socket) => {
-          await socket.leave(u2.name);
+          await socket.leave('' + u2.id);
           await socket.emit('delete', {
             id: u2.id,
-            name: u2.name,
-            avatar: u2.avatar,
-            status: u2.status,
           });
         });
     };

@@ -73,6 +73,14 @@ export class UserService implements OnModuleInit {
     });
   }
 
+  async setAllUsersOffline() {
+    await this.prisma.user.updateMany({
+      data: {
+        status: Status.OFFLINE,
+      },
+    });
+  }
+
   async updateUser(user: User) {
     return this.prisma.user.update({
       where: {

@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Request,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiMovedPermanentlyResponse,
@@ -37,7 +45,17 @@ export class AuthController {
   @ApiOperation({
     summary: "Authentifier l'utilisateur sur l'OAUTH2 de l'intra 42",
   })
-  logUser(@Param() authReq: AuthDTO, @Request() req) {
+  logUser(
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        forbidNonWhitelisted: true,
+      }),
+    )
+    authReq: AuthDTO,
+    @Request() req,
+  ) {
     return this.authService.login(req.user);
   }
 
