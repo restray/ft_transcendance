@@ -1,0 +1,31 @@
+.home {
+	width: 100%;
+	min-height: 70%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+
+	border-radius: 5px;
+	border-right: 2px solid white;
+	border-left: 2px solid white;
+	box-sizing: border-box;
+
+	&__buttons {
+		width: 100%;
+		max-width: 800px;
+	}
+	&__game {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+}
+
+@media screen and (max-width: 700px) {
+	.home {
+		border-width: 0;
+		&__profile {
+			display: none;
+		}
+	}
+}

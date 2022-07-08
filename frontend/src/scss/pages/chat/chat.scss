@@ -1,0 +1,274 @@
+$grey: #D9D9D9;
+$dark-grey: #8F8A8A;
+
+.Chat {
+	display: flex;
+	width: 90vw;
+	max-width: 1400px;
+	height: 70vh;
+	background-color: black;
+	&__channels {
+		&--container {
+			overflow: scroll;
+			-ms-overflow-style: none;  /* IE and Edge */
+			scrollbar-width: none;
+			width: min-content;
+			position: relative;
+			background-color: black;
+			max-height: 100%;
+		}
+		&__return {
+			display: block;
+			width: 40px;
+			padding: 5px;
+			border-radius: 3px;
+			margin: 10px 0;
+			background-color: $grey;
+			aspect-ratio: 1/1;
+			cursor: pointer;
+		}
+		padding: 7px 0;
+		z-index: 3;
+		padding: 0 10px;
+		&__bubble {
+			width: 50px;
+			height: 50px;
+			background-color: $grey;
+			border-radius: 50%;
+			margin: 10px 0;
+			color: black;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			cursor: pointer;
+			transition: transform 0.1s ease-out;
+			transition: box-shadow 0.1s ease-in;
+			&:hover
+			{
+				transform: scale(1.05);
+				box-shadow: 0px 0px 20px 1px #0ff;
+			}
+		}
+	}
+
+	&__right {
+		border-left: 2px solid $dark-grey;
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		&__roomName {
+			height: 70px;
+			box-sizing: border-box;
+			background-color: $grey;
+			color: black;
+			border-bottom: 2px solid $dark-grey;
+			width: 100%;
+			font-size: 35px;
+			padding: 10px 0;
+			font-family: PixelBit;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			cursor: pointer;
+			&__image {
+				width: 50px;
+				aspect-ratio: 1/1;
+				border-radius: 50%;
+				background-color: red;
+				margin: 0 20px;
+			}
+			&__menu {
+				width: 35px;
+				height: 35px;
+				padding: 0 10px;
+			}
+			transition: box-shadow 0.1s ease-in;
+			z-index: 2;
+			&:hover
+			{
+				box-shadow: 0px 0px 20px 1px #0ff;
+			}
+		}
+		&__room {
+			width: 100%;
+			height: 100%;
+			flex-grow: 1;
+			display: flex;
+			position: relative;
+		}
+	}
+}
+
+.RoomUsers {
+	&--container {
+		overflow-y: scroll;
+		-ms-overflow-style: none;  /* IE and Edge */
+		scrollbar-width: none;
+		position: relative;
+		width: fit-content;
+	}
+	max-width: 240px;
+	min-width: 240px;
+	padding: 10px 20px;
+	box-sizing: border-box;
+	background-color: $grey;
+	color: black;
+	&__section {
+
+		&__name {
+			font-size: 20px;
+			margin: 7px 0;
+		}
+		&__profile {
+			display: flex;
+			align-items: center;
+			border-radius: 5px;
+			&__name {
+				padding-left: 10px;
+				font-size: 17px;
+			}
+			&__image {
+				width: 40px;
+				height: 40px;
+				background-color: $dark-grey;
+				border-radius: 50%;
+			}
+		}
+	}
+	&__openButton {
+		position: fixed;
+		background-color: $grey;
+		border-top-left-radius: 3px;
+		border-bottom-left-radius: 3px;
+		transform: translateX(-99%);
+		padding: 5px;
+		margin-top: 80px;
+		img {
+			width: 35px;
+			aspect-ratio: 1/1;
+		}
+	}
+}
+
+.ChatUi {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
+	padding: 0 5% 30px 5%;
+	&__message {
+		width: 100%;
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column-reverse;
+		justify-content: flex-start;
+		overflow: scroll;
+		-ms-overflow-style: none;  /* IE and Edge */
+		scrollbar-width: none;
+		position: relative;
+		margin-bottom: 30px;
+		&__container {
+			width: 100%;
+			position: absolute;
+			display: flex;
+			flex-direction: column;
+		}
+	}
+	&__input {
+		display: flex;
+		width: 100%;
+		background-color: white;
+		border-radius: 2px;
+		padding: 10px 20px;
+		box-sizing: border-box;
+		cursor:text;
+		textarea {
+			flex-grow: 1;
+			resize: none;
+			flex-grow: 1;
+			border: 0px;
+			outline: none;
+			font-size: 15px;
+			margin-right: 20px;
+			align-self: center;
+		}
+		&__button {
+			color: black;
+			width: 30px;
+			height: 30px;
+			cursor: pointer;
+			transition: transform 0.1s ease-out;
+			margin-left: 10px;
+			&:hover
+			{
+				transform: scale(1.2);
+			}
+		}
+	}
+}
+
+
+@media screen and (max-width: 700px) {
+	.Chat {
+		width: 100%;
+		height: 100vh;
+		&__right {
+			position: relative;
+			border: none;
+			&__roomName {
+				font-size: 20px;
+				height: auto;
+				padding: 0;
+				&__image {
+					display: none;
+				}
+			}
+		}
+		&__channels {
+			&--container {
+				position: absolute;
+				z-index: 2;
+			}
+			&__return {
+				width: 30px;
+			}
+			&__image {
+				background-color: $grey;
+				border-bottom-left-radius: 3px;
+				border-bottom-right-radius: 3px;
+				display: flex;
+				justify-content: center;
+				cursor: pointer;
+				img {
+					width: 40px;
+					aspect-ratio: 1/1;
+				}
+			}
+			&__bubble {
+				margin: 10px 0;
+				width: 40px;
+				height: 40px;
+			}
+		}
+	}
+	.RoomUsers--container {
+		position: absolute;
+		right: 0;
+		top: 0;
+		height: 100%;
+		z-index: 2;
+	}
+
+	.ChatUi {
+		&__input {
+			textarea {
+				font-size: 12px;
+			}
+			padding: 2px 10px;
+			&__button {
+				width: 20px;
+			}
+		}
+	}
+}

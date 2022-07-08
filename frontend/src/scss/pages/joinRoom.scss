@@ -1,0 +1,47 @@
+.JoinRoom {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	&--container {
+		width: 100%;
+		max-width: 600px;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		transform: translateY(-5%);
+	}
+	&__image {
+		width: 200px;
+		height: 200px;
+		border: 5px solid white;
+		background-color: black;
+		border-radius: 50%;
+		position: relative;
+		top: 20px;
+		box-sizing: border-box;
+		overflow: hidden;
+		position: relative;
+		img {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+		}
+	}
+	&__name {
+		font-size: 30px;
+		z-index: 1;
+		background-color: black;
+		border-top: 5px solid white;
+	}
+	&__message {
+		font-size: 23px;
+		padding-top: 20px;
+	}
+	button {
+		margin-top: 40px;
+	}
+}

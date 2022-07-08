@@ -1,0 +1,19 @@
+.ImageUploader {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background-color: $grey;
+	opacity: 0;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: black;
+	transition: opacity 0.1s ease-in;
+	&:hover {
+		opacity: 0.8;
+	}
+	input {
+		display: none;
+	}
+}

@@ -1,0 +1,58 @@
+.History {
+
+	color: white;
+	text-align: center;
+	width: 100%;
+	font-family: 'Courier New', Courier, monospace;
+	padding-top: 30px;
+	padding-bottom: 25px;
+	background-color: white;
+	&__title {
+		font-size: 43px;
+		margin-block-start: 15px;
+		margin-block-end: 15px;
+	}
+	&__game {
+		font-size: 23px;
+
+		color:black;
+		background-color: white;
+
+		margin-block-start: 0px;
+		margin-block-end: 0px;
+		padding: 0px 30px 8px 30px;
+
+		display: grid;
+		grid-template-columns: 1fr 2fr 1fr;
+		&__date {
+			text-align: left;
+			font-size: 15px;
+			margin-block-start: 0;
+			margin-block-end: 0;
+		}
+		&__time {
+			text-align: right;
+			font-size: 15px;
+		}
+	}
+}
+
+@media screen and (max-width: 700px) {
+	.History {
+		&__game {
+			padding: 0;
+			padding-top: 5px;
+			width: 100%;
+			display: flex;
+			justify-content: center;
+			font-size: 17px;
+			&__date {
+				display: none;
+			}
+			&__time {
+				display: none;
+			}
+		}
+
+	}
+}
