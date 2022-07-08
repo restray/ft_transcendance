@@ -1,0 +1,14 @@
+.Page404 {
+	width: 100%;
+	min-height: 80%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	border-radius: 5px;
+	background-color: white;
+	h1 {
+		margin-block-end: 0;
+		margin-block-start: 30px;
+	}
+}

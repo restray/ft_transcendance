@@ -1,0 +1,52 @@
+body, #root, .App {
+	margin: 0;
+	padding: 0;
+	background-color:  black;
+	width: 100vw;
+	height: 100vh;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+.App {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.workZone {
+	width: 100%;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex-grow: 1;
+	box-sizing: border-box;
+
+	&__page {
+		width: 100%;
+		max-width: 800px;
+
+		position: relative;
+		border-radius: 5px;
+	
+		flex-direction: column;
+	}
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+
+@media screen and (max-width: 700px) {
+	.workZone {
+		&__page {
+			border-radius: 0px;
+		}
+		display: block;
+		padding: 0;
+		// background-color: white;
+	}
+}

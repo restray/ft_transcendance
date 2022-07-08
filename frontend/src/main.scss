@@ -1,0 +1,34 @@
+/* base */
+@import 'scss/base/body.scss';
+
+
+/* page */
+@import 'scss/pages/home.scss';
+@import 'scss/pages/profile.scss';
+@import 'scss/pages/page404.scss';
+/*chat*/
+@import 'scss/pages/chat/chat.scss';
+@import 'scss/pages/chat/message.scss';
+/*chat*/
+@import 'scss/pages/channelParameter.scss';
+@import 'scss/pages/joinRoom.scss';
+
+/* component */
+@import 'scss/component/game.scss';
+@import 'scss/component/header.scss';
+@import 'scss/component/chatIcon.scss';
+@import 'scss/component/bigButton.scss';
+@import 'scss/component/profilBox.scss';
+@import 'scss/component/rightClickMenu.scss';
+@import 'scss/component/history.scss';
+@import 'scss/component/modalBox.scss';
+@import 'scss/component/listing.scss';
+@import 'scss/component/saveBox.scss';
+@import 'scss/component/imageUploader.scss';
+@import 'scss/component/friendList.scss';
+@import 'scss/component/matchmakingBox.scss';
+
+/* utils */
+@import 'scss/utils/containers.scss';
+@import 'scss/utils/fonts.scss';
+@import 'scss/utils/button.scss';

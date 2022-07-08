@@ -1,0 +1,57 @@
+.Listing {
+	margin-top: 30px;
+	width: 100%;
+	border-radius: 3px;
+	height: auto;
+	user-select: none;
+	img {
+		height: 30px;
+		width: 30px;
+		margin-left: 15px;
+	}
+	&__name {
+		font-size: 30px;
+		color: black;
+		background-color: white;
+		width: 100%;
+		padding: 5px 15px;
+		box-sizing: border-box;
+		cursor: pointer;
+		position: relative;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border-top-left-radius: 3px;
+		border-top-right-radius: 3px;
+		&__checkbox {
+			height: 30px;
+			width: 30px;
+			margin: 0px;
+			margin-left: 15px;
+		}
+		&__images {
+			display: flex;
+			align-items: center;
+		}
+	}
+	&__element {
+		font-size: 20px;
+		padding: 5px 15px;
+		background-color: $grey;
+		color: black;
+		border-top: 2px solid black;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		img {
+			width: 25px;
+			height: 25px;
+		}
+		input {
+			height: 25px;
+			width: 25px;
+		}
+	}
+}
