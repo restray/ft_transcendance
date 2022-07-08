@@ -9,7 +9,7 @@ function getConfigApiDoc() {
   return new DocumentBuilder()
     .setTitle('FT_Transcendance 42')
     .setDescription(
-      "L'API du backend du transcendance de tbelhomm, pleveque et ...",
+      "L'API du backend du transcendance de tbelhomm, pleveque et oel-ahma",
     )
     .setVersion(conf.version)
     .addTag('Authentification')

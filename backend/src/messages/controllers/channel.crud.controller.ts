@@ -10,6 +10,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   Query,
   Req,
   UnauthorizedException,
@@ -31,6 +32,7 @@ import { ChannelsService } from 'src/prisma/channels/channels.service';
 import { ChannelPasswordInterceptor } from '../interceptors/channelPassword.interceptor';
 import { ChannelDTO } from '../dto/channel.dto';
 import { ChannelsGateway } from '../channels.gateway';
+import { ChannelUserStatus } from '@prisma/client';
 
 @Controller('channels')
 @UseGuards(Jwt2FAGuard)
@@ -113,6 +115,44 @@ export class ChannelCrudController {
     if (!channel) throw new NotFoundException('Channel not found');
 
     return channel;
+  }
+
+  @Put('/:id')
+  @ApiParam({
+    name: 'id',
+    required: true,
+    type: 'number',
+    description: 'ID du channel à récupérer',
+  })
+  @ApiOkResponse({
+    description: 'Channel supprimé',
+  })
+  @ApiForbiddenResponse({
+    description: "L'utilisateur doit être le owner du channel",
+  })
+  @ApiNotFoundResponse({
+    description: 'Channel inexistant',
+  })
+  async updateChannel(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req,
+    @Body() form: ChannelDTO,
+  ) {
+    const channel = await this.channelService.channelUser(id, req.user);
+    if (!channel) throw new NotFoundException('Channel not found');
+    if (channel.users.length != 1)
+      throw new NotFoundException('User not in channel');
+
+    const user = channel.users[0];
+    if (user.state != ChannelUserStatus.ADMIN)
+      throw new ForbiddenException('User not admin');
+
+    channel.name = form.name;
+    channel.type = form.type;
+
+    // await this.channelGateway.deleteChannel(channel);
+    await this.channelService.update(channel, form.password);
+    return 'ok';
   }
 
   @Delete('/:id')

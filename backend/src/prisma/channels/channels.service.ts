@@ -108,6 +108,24 @@ export class ChannelsService {
     });
   }
 
+  async update(channel: Channel, password?: string) {
+    let hashedPassword: null | string = null;
+    if (channel.type == ChannelType.PROTECTED) {
+      hashedPassword = await hash(password);
+    }
+
+    return this.prisma.channel.update({
+      where: {
+        id: channel.id,
+      },
+      data: {
+        name: channel.name,
+        type: channel.type,
+        password: hashedPassword,
+      },
+    });
+  }
+
   async isUserInChannel(channel_id: number, user: User) {
     const users = await this.prisma.channelUser.findFirst({
       where: {
