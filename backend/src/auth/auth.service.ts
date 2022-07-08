@@ -7,17 +7,17 @@ import { User } from '@prisma/client';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userServer: UserService,
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
   async retrieveUserFromToken(data: any): Promise<any> {
-    let user = await this.userServer.user({
+    let user = await this.userService.user({
       intra_id: data.id.toString(),
     });
     if (!user)
-      user = await this.userServer.create(data.login, data.id.toString());
+      user = await this.userService.create(data.login, data.id.toString());
     return user;
   }
 
