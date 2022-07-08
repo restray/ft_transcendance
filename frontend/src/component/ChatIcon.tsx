@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { motion } from "framer-motion"
 import Logo from '../images/talk.svg'
 import Send from '../images/whiteSend.svg'
@@ -7,6 +7,7 @@ import Chat from '../pages/Chat/Chat';
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Modal, { useModal } from './Modal';
 import { homeSanitizeQuery, sanitizeQuery } from '../lib/queryString';
+import { UserContext, UserContextValue } from '../context/userContext';
 
 export default function ChatIcon({ constraintsRef } :
 { constraintsRef: React.MutableRefObject<null> }) {
@@ -39,6 +40,14 @@ export default function ChatIcon({ constraintsRef } :
 	function goHome() {
 		navigate(`/?${homeSanitizeQuery(searchParams).toString()}`)
 	}
+
+    const { content } = useContext(UserContext) as UserContextValue;
+	function goProfile() {
+
+		searchParams = homeSanitizeQuery(searchParams)
+		searchParams.append('name', content.name)
+		navigate(`/profile?${searchParams.toString()}`)
+	}
 	return (
 		<>
 			<motion.img
@@ -54,7 +63,7 @@ export default function ChatIcon({ constraintsRef } :
 			<div className='chatBox'>
 				<img src={Send} alt='' onClick={onClick}/>
 				<img src={Home} alt='' onClick={goHome}/>
-				<img src={Home} alt='' onClick={goHome}/>
+				<img src={Home} alt='' onClick={goProfile}/>
 			</div>
 			<Modal open={open} setOpen={setOpenEvent}><Chat /></Modal>
 		</>

@@ -11,14 +11,14 @@ import { UserContext, UserContextValue } from './context/userContext';
 
 function App() {
 	const constraintsRef = useRef(null);
-    const { content } = useContext(UserContext) as UserContextValue;
+    const { content, token, login } = useContext(UserContext) as UserContextValue;
 
 	useEffect(()=>{
 
 	}, [content])
 
 	return (
-		content !== null ?
+		token !== null ?
 		<div className="App">
 			<Header />
 			<div className='workZone' ref={constraintsRef}>
@@ -38,7 +38,7 @@ function App() {
 			</div>
 		</div>
 		:
-		<h1 style={{color: 'white'}}>
+		<h1 style={{color: 'white'}} onClick={login}>
 			LOGIN
 		</h1>
 	);

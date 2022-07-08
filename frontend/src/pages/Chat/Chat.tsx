@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import ModalBox from '../../component/ModalBox';
 import ProfilBox, { NameWithMenu } from '../../component/ProfilBox';
 import menu from '../../images/menu.svg'
@@ -12,6 +12,8 @@ import ChatUi from './Message';
 import { ChannelParameter } from './Settings';
 import { AnimatePresence, motion } from 'framer-motion'
 import AllChannel from './AllChannel';
+import { HEADERS } from '../..';
+import { UserContext, UserContextValue } from '../../context/userContext';
 
 function FriendListFriend({name, pending}: {name: string, pending?: boolean}) {
 
@@ -41,34 +43,30 @@ function FriendListFriend({name, pending}: {name: string, pending?: boolean}) {
 	)
 }
 
-function FriendList() {
+function FriendList({friends}: {friends: []}) {
 
 	return (
 		<div className='FriendList--container'>
 			<div className='FriendList'>
 				<h1>Friend list</h1>
 				<p>Pending: </p>
-				<FriendListFriend name={'friend1'} pending={true}/>
-				<FriendListFriend name={'friend1'} pending={true}/>
-				<FriendListFriend name={'friend1'} pending={true}/>
-				<FriendListFriend name={'friend1'} pending={true}/>
-				<FriendListFriend name={'friend1'} pending={true}/>
+				{friends.map((friend: any, index: number)=>{
+					if (friend.status === 'WAITING')
+						return <FriendListFriend key={index} name={friend.receiver.name} pending={true}/>
+					return <></>
+				})}
 				<p>Friends: </p>
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend4'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
-				<FriendListFriend name={'friend1'} />
+				{friends.map((friend: any, index: number)=>{
+					if (friend.status === 'ACCEPTED')
+						return <FriendListFriend key={index} name={friend.receiver.name}/>
+					return <></>
+				})}
+				{/* <p>BLOCKED: </p>
+				{friends.map((friend: any)=>{
+					if (friend.status === 'BLOCKED' && friend.requester.name === '')
+						return <FriendListFriend name={friend.receiver.name}/>
+					return <></>
+				})} */}
 			</div>
 		</div>
 	)
@@ -91,7 +89,7 @@ function ChannelJoin() {
 	)
 }
 
-function RoomUsers() {
+function RoomUsers({rData}: {rData: RoomData}) {
 
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
 	const [open, setOpen] = useState<boolean>(false)
@@ -118,38 +116,31 @@ function RoomUsers() {
 				exit={{ scaleX: 0 }}
 				style={{ transformOrigin: 'center right' }}
 				className='RoomUsers'>
-					<div className='RoomUsers__section'>
+					{/* <div className='RoomUsers__section'>
 						<div className='RoomUsers__section__name'>
 							Super Admin -
 						</div>
 						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
-					</div>
+					</div> */}
 
 					<div className='RoomUsers__section'>
 						<div className='RoomUsers__section__name'>
 							Admins -
 						</div>
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--gold'}/>
+						{rData.users.map((user: any)=>{
+							if (user.state === 'ADMIN')
+								return <ProfilBox name={user.user.name} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
+						})}
 					</div>
 
 					<div className='RoomUsers__section'>
 						<div className='RoomUsers__section__name'>
 							Users -
 						</div>
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} />
+						{rData.users.map((user: any)=>{
+							if (user.state === 'USER')
+								return <ProfilBox name={user.user.name} cName={'RoomUsers__section__profile'} />
+						})}
 					</div>
 			</motion.div>
 			}
@@ -205,77 +196,140 @@ export function getWindowDimensions() {
 	};
 }
 
+export interface RoomData {
+
+	id: number,
+	name: string,
+	messages: [],
+	ownerId: 1,
+	password: null | string,
+	type: string,
+	users: []
+}
+
 export default function Chat() {
-	var [searchParams, setSearchParams] = useSearchParams();
-	const [room, setRoom] = useState<Room | null>(null)
+	var [searchParams, setSearchParams] = useSearchParams()
+	const [rData, setRData] = useState<RoomData | null>(null)
+	const [friends, setFriends] = useState<[]>([])
+	const [channels, setChannels] = useState<RoomData[]>([])
+
+	const { token } = useContext(UserContext) as UserContextValue
+
+	/* get all data needed */
+	useEffect(()=>{
+		fetch(`http://localhost:3000/friends`, {
+		method: 'GET',
+		headers: { ...HEADERS, 'Authorization': `Bearer ${token}`},
+		}).then(response => response.json())
+		.then(data => {
+			setFriends(data)
+		}).catch(()=>{})
+	}, [])
+
+	async function getChannelMessage(roomId: string): Promise<RoomData> {
+
+		var response = await fetch(`http://localhost:3000/channels/${roomId}?start=0&end=0`, {
+		method: 'GET',
+		headers: { ...HEADERS, 'Authorization': `Bearer ${token}`},
+		})
+		var data: Promise<RoomData> = response.json()
+		return data
+	}
+
+	// useEffect(()=>{
+	// 	console.log(channels)
+	// }, [channels])
+
+	useEffect(()=>{
+		
+		const fetchData = async () => {
+			var response = await fetch(`http://localhost:3000/channels`, {
+			method: 'GET',
+			headers: { ...HEADERS, 'Authorization': `Bearer ${token}`},
+			})
+			var data = await response.json()
+			var loadedChannels: RoomData[] = []
+			for (var room of data) {
+				var rData = await getChannelMessage(room.id)
+				loadedChannels.push(rData)
+			}
+			setChannels(loadedChannels)
+		}
+		fetchData()
+	}, [])
+	/* get all data needed */
 
 	useEffect(() => {
-		var roomId = searchParams.get('roomId')
+		var roomId: string | null = searchParams.get('roomId')
 		if (roomId === null)
 		{
-			setRoom(null)
+			setRData(null)
 			return
 		}
-		var newRoom: Room = Object.assign({}, room);
-		newRoom.name = roomId
-		setRoom(newRoom)
+		var rId: number = parseInt(roomId)
+		var newRData = channels.find((data: RoomData)=> data.id === rId )
+		if (newRData === undefined)
+		{
+			setRData(null)
+			return
+		}
+		setRData(newRData)
 	}, [searchParams])
 	
 	return (
 		<ModalBox noTop={true}>
 			<div className='Chat'>
-				<AllChannel />
+				<AllChannel channels={channels}/>
 				
 				<div className='Chat__right'>
-					{room && <ChannelContextMenu channel={'channel name'} isOnClick={true}>
+					{rData && <ChannelContextMenu channel={'channel name'} isOnClick={true}>
 						<div className='Chat__right__roomName'>
 							<div className='Chat__right__roomName__image'></div>
-							{room.name}
+							{rData.name}
 							<img className='Chat__right__roomName__menu' src={menu} alt='' />
 						</div>
 					</ChannelContextMenu>}
 
-					{getChannelRoute(searchParams.get('roomLocation'))}
+					{getChannelRoute(searchParams.get('roomLocation'), friends, rData)}
 				</div>
 			</div>
 		</ModalBox>
 	)
 }
 
-function getChannelRoute(route: string | null) {
-	console.log(route)
+function getChannelRoute(route: string | null, friends: [], rData: RoomData | null) {
 	if (route === null || route === 'home')
-		return (<ChatHome />)
+		return (<ChatHome friends={friends}/>)
 	else if (route === 'room/home')
-		return (<ChatChannelHome />)
+		return (<ChatChannelHome rData={rData}/>)
 	else if (route === 'room/settings')
 		return (<ChatChannelParameter />)
 	else if (route === 'room/join')
 		return (<ChatChannelJoin />)
 	else
-		return (<ChatHome />)
+		return (<ChatHome friends={friends}/>)
 }
 		
 
 /* pages */
-function ChatHome() {
+function ChatHome({friends}: {friends: []}) {
 
 	var [searchParams, setSearchParams] = useSearchParams()
 
 	return (
 		<div className='Chat__right__room'>
-		{searchParams.has('p_msg') ? <ChatUi /> : <FriendList />}
+		{searchParams.has('p_msg') ? <ChatUi /> : <FriendList friends={friends}/>}
 		</div>
 	)
 }
 
 
-function ChatChannelHome() {
+function ChatChannelHome({rData}: {rData: RoomData | null}) {
 
 	return (
 		<div className='Chat__right__room'>
 		<ChatUi />
-		<RoomUsers />
+		{rData !== null && <RoomUsers rData={rData}/>}
 		</div>
 	)
 }
@@ -284,7 +338,7 @@ function ChatChannelParameter() {
 	return (
 		<div className='Chat__right__room'>
 		<ChannelParameter />
-		<RoomUsers />
+		{/* <RoomUsers /> */}
 		</div>
 	)
 }

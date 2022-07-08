@@ -5,65 +5,84 @@ export const UserContext = createContext<UserContextValue | null>(null);
 export interface UserContextValueState {
 
 	name: string;
-	image: string;
-    token: string
+	avatar: string;
 }
+
 
 export interface UserContextValue {
 
-	content: UserContextValueState | null,
-    login: (a: string, b: string, c: string)=>void
+	content: UserContextValueState,
+	token: string | null,
+    login: ()=>void
 }
 
 export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
-    const [state, setState] = useState<UserContextValueState | null>(null)
+    const [state, setState] = useState<UserContextValueState>({name:'',avatar:''})
+    const [token, setToken] = useState<string | null>(null)
 	var [searchParams, setSearchParams] = useSearchParams()
+
+	function getInfo(access_token: string) {
+
+		console.log(access_token)
+		fetch(`http://localhost:3000/profile`, {
+			headers: {
+				'Content-Type': 'application/json;charset=UTF-8',
+				'Accept': 'application/json',
+				'Access-Control-Allow-Origin': '*',
+				'Authorization': `Bearer ${access_token}`
+			},
+			method: 'GET'
+		})
+		.then(response => response.json())
+		.then(data => {
+			console.log(data)
+			if (data.statusCode === 401)
+				localStorage.removeItem('userToken')
+			else {
+				setState({
+					name: data.name,
+					avatar: data.avatar
+				})
+				setToken(access_token)
+			}
+		})
+		.catch(()=>{})
+		localStorage.setItem('userToken', access_token)
+	}
 
     useEffect(()=>{
         var code = searchParams.get('code')
+		// var userToken = localStorage.getItem('userToken')
+		var userToken = null
+		searchParams.delete('code')
 
-        /*
-        si il existe un token => verification
-        sinon si il ya un code => verificer ce code, recevoir le token
-        sinon rediriger vers l'intre => retour etape 2
-        */
-
-        // if (code !== null)
-        // {
-        //     fetch(`http://localhost:3000/auth/login?&code=${code}`, {
-        //         headers: {
-        //             'Content-Type': 'application/json;charset=UTF-8',
-        //             'Accept': 'application/json',
-        //             'Access-Control-Allow-Origin': '*'
-        //         },
-        //         method: 'GET'
-        //     })
-        //     .then( response => response.json() )
-        //     .then( data => {
-        //         localStorage.setItem('userToken', data.access_token);
-        //     })
-        //     .catch( () => localStorage.removeItem('userToken') )
-        //     searchParams.delete('code')
-        //     setSearchParams(searchParams)
-        // }
-        // if (localStorage.getItem('userToken') === null)
-        // {
-        //     document.location.href="https://api.intra.42.fr/oauth/authorize?client_id=26b634b716649363e01ab4a47f888a4f886a3dbd295b5db57140a068eda483bf&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2F&response_type=code"; 
-        //     return
-        // }
-
-        localStorage.removeItem('userToken')
+        if (code !== null && userToken === null)
+        {
+			fetch(`http://localhost:3000/auth/login?code=${code}`, {
+				headers: {
+					'Content-Type': 'application/json;charset=UTF-8',
+					'Accept': 'application/json',
+					'Access-Control-Allow-Origin': '*',
+				},
+				method: 'GET'
+			})
+			.then(response => response.json())
+			.then(data => {
+				console.log(data)
+				getInfo(data.access_token)
+            })
+			.catch(()=>{})
+        }
+		setSearchParams(searchParams)
     }, [])
-    //1 look at beartoken and delete it if invalid
-    //2 else check if there is a code in url
-    //3 redirection to intra
 
-    function login(name: string, image: string, token: string) {
-        setState({name, image, token})
-    }
+	function login() {
+		document.location.href="https://api.intra.42.fr/oauth/authorize?client_id=26b634b716649363e01ab4a47f888a4f886a3dbd295b5db57140a068eda483bf&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2F&response_type=code"; 
+	}
 
     const value: UserContextValue = {
         content: state,
+        token: token,
         login: login
     }
     return (

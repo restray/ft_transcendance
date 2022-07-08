@@ -1,42 +1,49 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ChannelContextMenu, getWindowDimensions } from './Chat'
+import { ChannelContextMenu, getWindowDimensions, RoomData } from './Chat'
 import arrow from '../../images/arrow.svg'
 import ret from '../../images/return.svg'
 import home from '../../images/home.svg'
 import { sanitizeQuery } from '../../lib/queryString'
+import { Channel } from 'diagnostics_channel'
+import { HEADERS } from '../..'
+import { UserContext, UserContextValue } from '../../context/userContext'
 
-function ChatBubble({ name='', roomId, location }
-: {name?: string, roomId?: string, location: string}) {
+function ChatBubble({ roomData, location }
+: {roomData: RoomData, location: string}) {
 
 	var [searchParams, setSearchParams] = useSearchParams()
+
+	// useEffect(()=>{
+	// 	fetch(`http://localhost:3000/channels/${roomId}?start=0&end=0`, {
+	// 	method: 'GET',
+	// 	headers: { ...HEADERS, 'Authorization': `Bearer ${token}`},
+	// 	}).then(response => response.json())
+	// 	.then(data => console.log(data)).catch(()=>{})
+	// }, [])
+	
 	function onClick() {
 		searchParams.set('roomLocation', location)
-		if (roomId)
-			searchParams.set('roomId', roomId)
-		else
-		{
-			//reset
-			searchParams.delete('roomId')
-			searchParams.delete('p_msg')
-		}
+		searchParams.set('roomId', roomData.id.toString())
 		setSearchParams(searchParams, {replace: true})
 	}
 	return (
 		<ChannelContextMenu channel={'channel name'}>
-			<div className='Chat__channels__bubble' onClick={onClick}>{name}</div>
+			<div className='Chat__channels__bubble' onClick={onClick}></div>
 		</ChannelContextMenu>
 	)
 }
 
 
-export default function AllChannel() {
+export default function AllChannel({channels}: {channels: RoomData[]}) {
+
 	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
 	const [open, setOpen] = useState<boolean>(false)
 
 	function onClick(e: React.MouseEvent) {
 		e.stopPropagation()
-		setOpen(!open)
+		if (windowDimensions.width <= 700)
+			setOpen(!open)
 	}
 	function hide() {
 		if (windowDimensions.width <= 700)
@@ -46,6 +53,7 @@ export default function AllChannel() {
 		if (windowDimensions.width > 700)
 			setOpen(true)
 	}, [windowDimensions])
+
 	var [searchParams, setSearchParams] = useSearchParams()
 	
 	function goHome() {
@@ -69,20 +77,7 @@ export default function AllChannel() {
 				{open &&
 				<>
 					<hr/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
-					<ChatBubble roomId={'very good room'} location={'room/home'}/>
+					{channels.map((channel: any)=><ChatBubble roomData={channel} location={'room/home'}/>)}
 				</>
 				}
 				{windowDimensions.width <= 700 &&
