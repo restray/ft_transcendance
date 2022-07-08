@@ -8,6 +8,10 @@ export interface UserRequest {
   avatar?: string;
 }
 
+export function localUploadToURL(avatar: string) {
+  return avatar.replace('uploads/', 'static/');
+}
+
 @Injectable()
 export class UserService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}

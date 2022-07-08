@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { NestGateway } from '@nestjs/websockets/interfaces/nest-gateway.interface';
 import { AuthSocket, WSAuthMiddleware } from 'src/auth/websocket.middleware';
-import { UserService } from 'src/prisma/user/user.service';
+import { localUploadToURL, UserService } from 'src/prisma/user/user.service';
 import { Status, User } from '@prisma/client';
 import { FriendsService } from 'src/prisma/friends/friends.service';
 import { ParseEnumPipe } from '@nestjs/common';
@@ -102,7 +102,7 @@ export class StatusGateway implements NestGateway {
           await socket.emit('new', {
             id: u2.id,
             name: u2.name,
-            avatar: u2.avatar,
+            avatar: localUploadToURL(u2.avatar),
             status: u2.status,
           });
         });

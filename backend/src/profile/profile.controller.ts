@@ -5,6 +5,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Post,
   Req,
   Res,
@@ -30,7 +31,7 @@ import multer from 'multer';
 import path from 'path';
 import Jwt2FAGuard from 'src/auth/guards/jwt-2fa.guard';
 import UserPublic from 'src/prisma/user/user.public.interface';
-import { UserService } from 'src/prisma/user/user.service';
+import { localUploadToURL, UserService } from 'src/prisma/user/user.service';
 import { EditProfileDTO } from './dto/profile.dto';
 import * as mime from 'mime-types';
 
@@ -50,7 +51,7 @@ export class ProfileController {
       id: req.user.id,
       name: req.user.name,
       status: req.user.status,
-      avatar: req.user.avatar,
+      avatar: localUploadToURL(req.user.avatar),
       otp_enable: req.user.otp_enable,
     };
   }
@@ -130,48 +131,37 @@ export class ProfileController {
     return 'ok';
   }
 
-  @Get('/:name/avatar')
+  @Get('/:id')
   @ApiOperation({
-    summary: "Récupérer l'avatar d'un utilisateur",
+    summary: "Récupérer les informations d'un utilisateur",
   })
-  @ApiProduces('image/png', 'image/jpeg')
   @ApiParam({
-    name: 'name',
+    name: 'id',
     required: true,
-    type: 'string',
-    description: 'name du user auquel il faut afficher la photo',
+    type: 'number',
+    description: 'ID du channel à récupérer',
   })
   @ApiOkResponse({
-    content: {
-      'image/png': {
-        schema: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-      'image/jpeg': {
-        schema: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
+    description: "L'utilisateur avec cet ID",
   })
   @ApiNotFoundResponse({
-    description: 'Utilisateur inexistant',
+    description: "Aucun utilisateur n'existe avec cet id",
   })
-  async getAvatar(@Param('name') name, @Res() res) {
+  async getUser(
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<any> {
+    /** @todo penser aux bloquages */
+
     const user = await this.userService.user({
-      name,
+      id,
     });
     if (!user) throw new NotFoundException();
 
-    if (!user.avatar) return '';
-
-    const file = createReadStream(path.join(process.cwd(), user.avatar));
-    res.set({
-      'Content-Type': mime.lookup(user.avatar) || 'application/octet-stream',
-    });
-    file.pipe(res);
+    return {
+      id: user.id,
+      name: user.name,
+      avatar: localUploadToURL(user.avatar),
+    };
   }
 }

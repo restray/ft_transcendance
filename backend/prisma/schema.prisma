@@ -50,7 +50,7 @@ model User {
   id             Int              @id @default(autoincrement())
   name           String           @unique
   status         Status           @default(OFFLINE)
-  avatar         String           @default("uploads/default.jpg")
+  avatar         String           @default("uploads/user/default.jpg")
   otp_secret     String?
   otp_enable     Boolean          @default(false)
   intra_id       String           @unique

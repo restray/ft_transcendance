@@ -12,7 +12,11 @@ import {
 import { NestGateway } from '@nestjs/websockets/interfaces/nest-gateway.interface';
 import { AuthSocket, WSAuthMiddleware } from 'src/auth/websocket.middleware';
 import { ChannelsService } from 'src/prisma/channels/channels.service';
-import { UserRequest, UserService } from 'src/prisma/user/user.service';
+import {
+  localUploadToURL,
+  UserRequest,
+  UserService,
+} from 'src/prisma/user/user.service';
 import { Server } from 'socket.io';
 import { Channel, ChannelUserStatus } from '@prisma/client';
 
@@ -74,7 +78,7 @@ export class ChannelsGateway implements NestGateway {
       user: {
         id: socket.user.id,
         name: socket.user.name,
-        avatar: socket.user.avatar,
+        avatar: localUploadToURL(socket.user.avatar),
       },
     });
 
@@ -95,7 +99,7 @@ export class ChannelsGateway implements NestGateway {
       user: {
         id: user.id,
         name: user.name,
-        avatar: user.avatar,
+        avatar: localUploadToURL(user.avatar),
       },
     });
   }
@@ -110,7 +114,7 @@ export class ChannelsGateway implements NestGateway {
       user: {
         id: action.user.id,
         name: action.user.name,
-        avatar: action.user.avatar,
+        avatar: localUploadToURL(action.user.avatar),
       },
     });
   }
@@ -125,7 +129,7 @@ export class ChannelsGateway implements NestGateway {
       user: {
         id: user.id,
         name: user.name,
-        avatar: user.avatar,
+        avatar: localUploadToURL(user.avatar),
       },
     });
 
