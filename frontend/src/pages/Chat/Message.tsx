@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import ReactTextareaAutosize from "react-textarea-autosize";
 import MatchMakingButton from "../../component/MatchMakingBox";
 import { NameWithMenu } from "../../component/ProfilBox";
+import { ChatContext, ChatValue } from "../../context/chatContext";
+import { UserContext, UserContextValue } from "../../context/userContext";
 import game from '../../images/game.svg'
 import send from '../../images/send.svg'
 
@@ -62,39 +64,33 @@ export default function ChatUi() {
 
 	const ref = useRef<any>()
 	const [value, setValue] = useState<string>('')
+	const {content: {rData}, sendMessage} = useContext(ChatContext) as ChatValue
+	const {content: {id}} = useContext(UserContext) as UserContextValue
 
 	function focus() {
 		if(ref.current) ref.current.focus(); 
 	}
-	function sendMessage(e: React.MouseEvent<HTMLDivElement>) {
+	function onClickSendMessage(e: React.MouseEvent<HTMLDivElement>) {
 		e.stopPropagation()
-		if (value.length > 0)
-			console.log(value)
-		else
+		if (value.length === 0)
+		{
 			console.log('empty message!')
+			return
+		}
+		sendMessage(value)
 		setValue('')
 	}
-
+	// console.log(rData)
 	return (
 		<div className='ChatUi'>
 			<div className='ChatUi__message'>
 				<div className='ChatUi__message__container'>
-					<Message content={'hello world'} user={'pleveque'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<MessageSystem user={'tbelhomm'} content={'joined the room!'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<Message content={'hello world'} user={'pleveque'} />
-					<MessageSystem user={'tbelhomm'} content={'joined the room!'} />
-					<Message content={'hello world this is a verty longn messag hello world this is a verty longn messag hello world this is a verty longn messag'} user={'pleveque'} />
-					<Message direction={'right'} content={'hello world this is a verty longn messag hello world this is a verty longn messag hello world this is a verty longn messag'} user={'pleveque'} />
-					<Message direction={'right'} content={'hello world'} user={'pleveque'} />
-					<MessageGame user={'pleveque'} />
+					{rData && rData.messages.slice(0).reverse().map((msg: any)=>{
+						if (msg.User.id === id)
+							return <Message direction={'right'} content={msg.content} user={msg.User.name} key={msg.id}/>
+						return <Message content={msg.content} user={msg.User.name} key={msg.id}/>
+					})
+					}
 				</div>
 			</div>
 			<div className='ChatUi__input' onClick={focus}>
@@ -106,7 +102,7 @@ export default function ChatUi() {
 				<MatchMakingButton>
 					<img className='ChatUi__input__button' src={game} alt={'game'}/>
 				</MatchMakingButton>
-				<img className='ChatUi__input__button' src={send} alt={'send'} onClick={(e)=>sendMessage(e)}/>
+				<img className='ChatUi__input__button' src={send} alt={'send'} onClick={onClickSendMessage}/>
 			</div>
 		</div>
 	)

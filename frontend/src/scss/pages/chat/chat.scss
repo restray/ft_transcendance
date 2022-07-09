@@ -26,6 +26,11 @@ $dark-grey: #8F8A8A;
 			background-color: $grey;
 			aspect-ratio: 1/1;
 			cursor: pointer;
+			transition: transform 0.1s ease-out;
+			&:hover
+			{
+				transform: scale(1.1);
+			}
 		}
 		padding: 7px 0;
 		z-index: 3;

@@ -1,11 +1,13 @@
 import React, {createContext, useState, useEffect} from 'react';
 import { useSearchParams } from 'react-router-dom';
+import fetchWithToken, { checkToken } from '../lib/fetchImprove';
 export const UserContext = createContext<UserContextValue | null>(null);
 
 export interface UserContextValueState {
 
 	name: string;
 	avatar: string;
+	id: number
 }
 
 
@@ -13,50 +15,44 @@ export interface UserContextValue {
 
 	content: UserContextValueState,
 	token: string | null,
+	deleteToken: ()=>void,
     login: ()=>void
 }
 
 export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
-    const [state, setState] = useState<UserContextValueState>({name:'',avatar:''})
+    const [state, setState] = useState<UserContextValueState>({name:'',avatar:'', id: 0})
     const [token, setToken] = useState<string | null>(null)
 	var [searchParams, setSearchParams] = useSearchParams()
 
-	function getInfo(access_token: string) {
-
-		console.log(access_token)
-		fetch(`http://localhost:3000/profile`, {
-			headers: {
-				'Content-Type': 'application/json;charset=UTF-8',
-				'Accept': 'application/json',
-				'Access-Control-Allow-Origin': '*',
-				'Authorization': `Bearer ${access_token}`
-			},
-			method: 'GET'
-		})
-		.then(response => response.json())
-		.then(data => {
-			console.log(data)
-			if (data.statusCode === 401)
-				localStorage.removeItem('userToken')
-			else {
-				setState({
-					name: data.name,
-					avatar: data.avatar
-				})
-				setToken(access_token)
-			}
-		})
-		.catch(()=>{})
-		localStorage.setItem('userToken', access_token)
+	function deleteToken() {
+		setToken(null)
+		localStorage.removeItem('userToken')
+		console.log('deleting')
 	}
+
+	useEffect(()=>{
+		checkToken(token,
+			(token: string)=>fetchWithToken<any>({token, deleteToken, url: `/profile`,
+				callback: (data: any)=>{
+					setState({
+						name: data.name,
+						avatar: data.avatar,
+						id: data.id
+					})
+				}})
+		)
+	}, [token])
 
     useEffect(()=>{
         var code = searchParams.get('code')
-		// var userToken = localStorage.getItem('userToken')
-		var userToken = null
-		searchParams.delete('code')
+		var userToken = localStorage.getItem('userToken')
 
-        if (code !== null && userToken === null)
+		if (userToken)
+		{
+			setToken(userToken)
+			return
+		}
+        if (code)
         {
 			fetch(`http://localhost:3000/auth/login?code=${code}`, {
 				headers: {
@@ -68,12 +64,15 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 			})
 			.then(response => response.json())
 			.then(data => {
-				console.log(data)
-				getInfo(data.access_token)
+				if (data)
+				{
+					setToken(data.access_token)
+					localStorage.setItem('userToken', data.access_token)
+				}
             })
-			.catch(()=>{})
         }
 		setSearchParams(searchParams)
+		
     }, [])
 
 	function login() {
@@ -83,6 +82,7 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
     const value: UserContextValue = {
         content: state,
         token: token,
+		deleteToken: deleteToken,
         login: login
     }
     return (

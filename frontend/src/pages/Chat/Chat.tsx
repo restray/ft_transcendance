@@ -1,19 +1,18 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import ModalBox from '../../component/ModalBox';
 import ProfilBox, { NameWithMenu } from '../../component/ProfilBox';
-import menu from '../../images/menu.svg'
 import chat from '../../images/chat.svg'
 import arrow from '../../images/arrow.svg'
+import menu from '../../images/menu.svg'
 import friendAdd from '../../images/friendAdd.svg'
 import useContextMenu from '../../lib/generateMenu';
-import InvisibleInput, { InvisibleInputSelect } from '../../component/InvisibleInput';
+import InvisibleInput from '../../component/InvisibleInput';
 import { useSearchParams } from 'react-router-dom';
 import ChatUi from './Message';
 import { ChannelParameter } from './Settings';
 import { AnimatePresence, motion } from 'framer-motion'
-import AllChannel from './AllChannel';
-import { HEADERS } from '../..';
-import { UserContext, UserContextValue } from '../../context/userContext';
+import AllChannel, { CreateServerModal } from './AllChannel';
+import { ChatContext, ChatProvider, ChatValue, RoomData } from '../../context/chatContext';
 
 function FriendListFriend({name, pending}: {name: string, pending?: boolean}) {
 
@@ -43,7 +42,7 @@ function FriendListFriend({name, pending}: {name: string, pending?: boolean}) {
 	)
 }
 
-function FriendList({friends}: {friends: []}) {
+function FriendList({friends}: {friends: any[]}) {
 
 	return (
 		<div className='FriendList--container'>
@@ -53,13 +52,13 @@ function FriendList({friends}: {friends: []}) {
 				{friends.map((friend: any, index: number)=>{
 					if (friend.status === 'WAITING')
 						return <FriendListFriend key={index} name={friend.receiver.name} pending={true}/>
-					return <></>
+					return null
 				})}
 				<p>Friends: </p>
 				{friends.map((friend: any, index: number)=>{
 					if (friend.status === 'ACCEPTED')
 						return <FriendListFriend key={index} name={friend.receiver.name}/>
-					return <></>
+					return null
 				})}
 				{/* <p>BLOCKED: </p>
 				{friends.map((friend: any)=>{
@@ -91,7 +90,7 @@ function ChannelJoin() {
 
 function RoomUsers({rData}: {rData: RoomData}) {
 
-	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
+	const [windowDimensions] = useState(getWindowDimensions())
 	const [open, setOpen] = useState<boolean>(false)
 
 	useEffect(()=>{
@@ -129,7 +128,8 @@ function RoomUsers({rData}: {rData: RoomData}) {
 						</div>
 						{rData.users.map((user: any)=>{
 							if (user.state === 'ADMIN')
-								return <ProfilBox name={user.user.name} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
+								return <ProfilBox key={user.user.id} name={user.user.name} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
+							return null
 						})}
 					</div>
 
@@ -139,7 +139,8 @@ function RoomUsers({rData}: {rData: RoomData}) {
 						</div>
 						{rData.users.map((user: any)=>{
 							if (user.state === 'USER')
-								return <ProfilBox name={user.user.name} cName={'RoomUsers__section__profile'} />
+								return <ProfilBox key={user.user.id} name={user.user.name} cName={'RoomUsers__section__profile'} />
+							return null
 						})}
 					</div>
 			</motion.div>
@@ -148,8 +149,10 @@ function RoomUsers({rData}: {rData: RoomData}) {
 		</div>
 	)
 }
-export function ChannelContextMenu({ children, channel, isOnClick=false }:
-{ children: JSX.Element, channel: string, isOnClick?: boolean }) {
+export function ChannelContextMenu({ children, channel, isOnClick=false, roomData }:
+{ children: JSX.Element, channel: string, isOnClick?: boolean, roomData: RoomData }) {
+
+	const {leaveChannel, setLocation} = useContext(ChatContext) as ChatValue
 
 	var [searchParams, setSearchParams] = useSearchParams()
 	const generateMenu = useContextMenu([
@@ -162,31 +165,48 @@ export function ChannelContextMenu({ children, channel, isOnClick=false }:
 		{
 			name: 'Channel settings',
 			func: function renamePage() {
-				searchParams.set('roomLocation', 'room/settings')
-				setSearchParams(searchParams)
+				setLocation('room/settings', roomData.id)
 			}
 		},
 		{
 			name: 'Leave channel',
-			func: function renamePage() {
+			func: function leaveChannel() {
+				console.log('leave')
+				setLeaveModal(true)
 			}
 		}
 	])
-	if (isOnClick)
-		return (
-			<div
-			onContextMenu={(e)=>generateMenu(e)}
-			onClick={(e)=>generateMenu(e)}
-			>{children}</div>
-		)
+
+	/* modals */
+	const [leaveModal, setLeaveModal] = useState<boolean>(false)
+	function onClickLeaveChannel() {
+		leaveChannel(roomData.id, ()=>{setLeaveModal(false)})
+	}
+	// if (isOnClick)
+	// 	return (
+	// 		<div
+	// 		onContextMenu={(e)=>generateMenu(e)}
+	// 		onClick={(e)=>generateMenu(e)}
+	// 		>
+	// 			{leaveModal && <CreateServerModal modal={leaveModal} setModal={setLeaveModal}
+	// 				onCreate={onClickLeaveChannel} message={`Do you really want to leave "${roomData.name}"?`}
+	// 			title={'Leave room'} />}
+	// 			{children}
+	// 		</div>
+	// 	)
 	return (
-		<div onContextMenu={(e)=>generateMenu(e)}>{children}</div>
+		<div onContextMenu={(e)=>generateMenu(e)}>
+			{leaveModal && <CreateServerModal modal={leaveModal} setModal={setLeaveModal}
+					onCreate={onClickLeaveChannel} message={`Do you really want to leave "${roomData.name}"?`}
+				title={'Leave room'} />}
+			{children}
+		</div>
 	)
 }
 
-interface Room {
-	name: string
-}
+// interface Room {
+// 	name: string
+// }
 
 export function getWindowDimensions() {
 	const { innerWidth: width, innerHeight: height } = window;
@@ -196,108 +216,84 @@ export function getWindowDimensions() {
 	};
 }
 
-export interface RoomData {
+export default function Chat() {
 
-	id: number,
-	name: string,
-	messages: [],
-	ownerId: 1,
-	password: null | string,
-	type: string,
-	users: []
+	return (
+		<ChatProvider>
+			<ChatContent />
+		</ChatProvider>
+	)
 }
 
-export default function Chat() {
-	var [searchParams, setSearchParams] = useSearchParams()
-	const [rData, setRData] = useState<RoomData | null>(null)
-	const [friends, setFriends] = useState<[]>([])
-	const [channels, setChannels] = useState<RoomData[]>([])
+function Loader({loaded}: {loaded: Map<string, boolean>}) {
 
-	const { token } = useContext(UserContext) as UserContextValue
-
-	/* get all data needed */
-	useEffect(()=>{
-		fetch(`http://localhost:3000/friends`, {
-		method: 'GET',
-		headers: { ...HEADERS, 'Authorization': `Bearer ${token}`},
-		}).then(response => response.json())
-		.then(data => {
-			setFriends(data)
-		}).catch(()=>{})
-	}, [])
-
-	async function getChannelMessage(roomId: string): Promise<RoomData> {
-
-		var response = await fetch(`http://localhost:3000/channels/${roomId}?start=0&end=0`, {
-		method: 'GET',
-		headers: { ...HEADERS, 'Authorization': `Bearer ${token}`},
-		})
-		var data: Promise<RoomData> = response.json()
-		return data
+	var load = 0
+	var total = 0
+	for (let l of loaded.values()) {
+		if(l)
+			++load
+		++total
 	}
+	return (
+		<div style={{
+			fontSize: '40px',
+			width: '100%',
+			height: '100%',
+			display: 'flex',
+			justifyContent: 'center',
+			alignItems: 'center',
+			flexDirection: 'column'
+		}}>
+			<div>loading</div>
+			<div>{load}/{total}</div>
+		</div>
+	)
+}
 
-	// useEffect(()=>{
-	// 	console.log(channels)
-	// }, [channels])
+function ChatContent() {
 
+	var [searchParams] = useSearchParams()
+	const {content: {friends, rData, state: {location}}, loaded} = useContext(ChatContext) as ChatValue
+
+	function isFullLoad() {
+		for (var value of loaded.values()) {
+			if (!value)
+				return false
+		}
+		return true
+	}
 	useEffect(()=>{
-		
-		const fetchData = async () => {
-			var response = await fetch(`http://localhost:3000/channels`, {
-			method: 'GET',
-			headers: { ...HEADERS, 'Authorization': `Bearer ${token}`},
-			})
-			var data = await response.json()
-			var loadedChannels: RoomData[] = []
-			for (var room of data) {
-				var rData = await getChannelMessage(room.id)
-				loadedChannels.push(rData)
-			}
-			setChannels(loadedChannels)
-		}
-		fetchData()
-	}, [])
-	/* get all data needed */
+		console.log(location)
+	}, [location])
 
-	useEffect(() => {
-		var roomId: string | null = searchParams.get('roomId')
-		if (roomId === null)
-		{
-			setRData(null)
-			return
-		}
-		var rId: number = parseInt(roomId)
-		var newRData = channels.find((data: RoomData)=> data.id === rId )
-		if (newRData === undefined)
-		{
-			setRData(null)
-			return
-		}
-		setRData(newRData)
-	}, [searchParams])
-	
 	return (
 		<ModalBox noTop={true}>
 			<div className='Chat'>
-				<AllChannel channels={channels}/>
-				
-				<div className='Chat__right'>
-					{rData && <ChannelContextMenu channel={'channel name'} isOnClick={true}>
-						<div className='Chat__right__roomName'>
-							<div className='Chat__right__roomName__image'></div>
-							{rData.name}
-							<img className='Chat__right__roomName__menu' src={menu} alt='' />
-						</div>
-					</ChannelContextMenu>}
+				{!isFullLoad() ?
+				<Loader loaded={loaded}/>
+				:
+				<>
+					<AllChannel />
+					
+					<div className='Chat__right'>
+						{rData && <ChannelContextMenu channel={'channel name'} isOnClick={true} roomData={rData}>
+								<div className='Chat__right__roomName'>
+									<div className='Chat__right__roomName__image'></div> 
+									{rData.name}
+									<img className='Chat__right__roomName__menu' src={menu} alt='' />
+								</div>
+						</ChannelContextMenu>}
 
-					{getChannelRoute(searchParams.get('roomLocation'), friends, rData)}
-				</div>
+						{getChannelRoute(location, friends, rData)}
+					</div>
+				</>}
 			</div>
 		</ModalBox>
 	)
 }
 
-function getChannelRoute(route: string | null, friends: [], rData: RoomData | null) {
+function getChannelRoute(route: string | null, friends: any[], rData: RoomData | null) {
+
 	if (route === null || route === 'home')
 		return (<ChatHome friends={friends}/>)
 	else if (route === 'room/home')
@@ -306,15 +302,14 @@ function getChannelRoute(route: string | null, friends: [], rData: RoomData | nu
 		return (<ChatChannelParameter />)
 	else if (route === 'room/join')
 		return (<ChatChannelJoin />)
-	else
-		return (<ChatHome friends={friends}/>)
+	return (<ChatHome friends={friends}/>)
 }
 		
 
 /* pages */
-function ChatHome({friends}: {friends: []}) {
+function ChatHome({friends}: {friends: any[]}) {
 
-	var [searchParams, setSearchParams] = useSearchParams()
+	var [searchParams] = useSearchParams()
 
 	return (
 		<div className='Chat__right__room'>

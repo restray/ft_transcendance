@@ -14,11 +14,15 @@ function App() {
     const { content, token, login } = useContext(UserContext) as UserContextValue;
 
 	useEffect(()=>{
-
+		console.log(content)
 	}, [content])
 
 	return (
-		token !== null ?
+		content.id === 0 ?
+		<h1 style={{color: 'white'}} onClick={login}>
+		LOGIN
+		</h1>
+		:
 		<div className="App">
 			<Header />
 			<div className='workZone' ref={constraintsRef}>
@@ -37,10 +41,6 @@ function App() {
 				</motion.div>
 			</div>
 		</div>
-		:
-		<h1 style={{color: 'white'}} onClick={login}>
-			LOGIN
-		</h1>
 	);
 }
 
