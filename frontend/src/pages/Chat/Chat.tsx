@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import ModalBox from '../../component/ModalBox';
 import ProfilBox, { NameWithMenu } from '../../component/ProfilBox';
 import chat from '../../images/chat.svg'
@@ -154,7 +154,6 @@ export function ChannelContextMenu({ children, channel, isOnClick=false, roomDat
 
 	const {leaveChannel, setLocation} = useContext(ChatContext) as ChatValue
 
-	var [searchParams, setSearchParams] = useSearchParams()
 	const generateMenu = useContextMenu([
 		{
 			name: 'Create Invitation',
@@ -171,7 +170,6 @@ export function ChannelContextMenu({ children, channel, isOnClick=false, roomDat
 		{
 			name: 'Leave channel',
 			func: function leaveChannel() {
-				console.log('leave')
 				setLeaveModal(true)
 			}
 		}
@@ -179,8 +177,23 @@ export function ChannelContextMenu({ children, channel, isOnClick=false, roomDat
 
 	/* modals */
 	const [leaveModal, setLeaveModal] = useState<boolean>(false)
+	const [isLoading, setIsLoading] = useState<boolean>(false)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(()=>{
+		if (leaveModal === false)
+			setError(null)		
+	}, [leaveModal])
+
 	function onClickLeaveChannel() {
-		leaveChannel(roomData.id, ()=>{setLeaveModal(false)})
+		setIsLoading(true)
+		leaveChannel(roomData.id, (data: any)=>{
+			setIsLoading(false)
+			if (data.statusCode !== 200)
+				setError(data.message)
+			else
+				setLeaveModal(false)
+		})
 	}
 	// if (isOnClick)
 	// 	return (
@@ -196,9 +209,10 @@ export function ChannelContextMenu({ children, channel, isOnClick=false, roomDat
 	// 	)
 	return (
 		<div onContextMenu={(e)=>generateMenu(e)}>
-			{leaveModal && <CreateServerModal modal={leaveModal} setModal={setLeaveModal}
-					onCreate={onClickLeaveChannel} message={`Do you really want to leave "${roomData.name}"?`}
-				title={'Leave room'} />}
+			<CreateServerModal modal={leaveModal} setModal={setLeaveModal}
+				isLoading={isLoading} error={error}
+				onCreate={onClickLeaveChannel} message={`Do you really want to leave "${roomData.name}"?`}
+				title={'Leave room'} />
 			{children}
 		</div>
 	)
@@ -214,15 +228,6 @@ export function getWindowDimensions() {
 		width,
 		height
 	};
-}
-
-export default function Chat() {
-
-	return (
-		<ChatProvider>
-			<ChatContent />
-		</ChatProvider>
-	)
 }
 
 function Loader({loaded}: {loaded: Map<string, boolean>}) {
@@ -250,10 +255,9 @@ function Loader({loaded}: {loaded: Map<string, boolean>}) {
 	)
 }
 
-function ChatContent() {
+export default function Chat() {
 
-	var [searchParams] = useSearchParams()
-	const {content: {friends, rData, state: {location}}, loaded} = useContext(ChatContext) as ChatValue
+	const {content: {friends, rData, state: {location}}, loaded, setOpen} = useContext(ChatContext) as ChatValue
 
 	function isFullLoad() {
 		for (var value of loaded.values()) {

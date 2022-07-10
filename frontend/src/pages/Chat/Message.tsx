@@ -2,7 +2,7 @@ import { useContext, useRef, useState } from "react";
 import ReactTextareaAutosize from "react-textarea-autosize";
 import MatchMakingButton from "../../component/MatchMakingBox";
 import { NameWithMenu } from "../../component/ProfilBox";
-import { ChatContext, ChatValue } from "../../context/chatContext";
+import { ChatContext, ChatValue, MessageType } from "../../context/chatContext";
 import { UserContext, UserContextValue } from "../../context/userContext";
 import game from '../../images/game.svg'
 import send from '../../images/send.svg'
@@ -85,10 +85,10 @@ export default function ChatUi() {
 		<div className='ChatUi'>
 			<div className='ChatUi__message'>
 				<div className='ChatUi__message__container'>
-					{rData && rData.messages.slice(0).reverse().map((msg: any)=>{
+					{rData && rData.messages.slice(0).reverse().map((msg: MessageType, index: number)=>{
 						if (msg.User.id === id)
-							return <Message direction={'right'} content={msg.content} user={msg.User.name} key={msg.id}/>
-						return <Message content={msg.content} user={msg.User.name} key={msg.id}/>
+							return <Message direction={'right'} content={msg.content} user={msg.User.name} key={index}/>
+						return <Message content={msg.content} user={msg.User.name} key={index}/>
 					})
 					}
 				</div>

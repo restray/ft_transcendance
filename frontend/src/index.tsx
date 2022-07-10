@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import RightClickMenu from './component/rightClickMenu';
+import { ChatProvider } from './context/chatContext';
 import { RightClickMenuProvider } from './context/rightClickMenu';
 import { UserContextProvider } from './context/userContext';
 
@@ -20,10 +21,12 @@ root.render(
 	<BrowserRouter>
 		<RightClickMenuProvider>
 			<UserContextProvider>
+				<ChatProvider>
 				<React.StrictMode>
 					<App />
 					<RightClickMenu />
 				</React.StrictMode>
+				</ChatProvider>
 			</UserContextProvider>
 		</RightClickMenuProvider>
 	</BrowserRouter>

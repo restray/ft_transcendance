@@ -13,12 +13,8 @@ function App() {
 	const constraintsRef = useRef(null);
     const { content, token, login } = useContext(UserContext) as UserContextValue;
 
-	useEffect(()=>{
-		console.log(content)
-	}, [content])
-
 	return (
-		content.id === 0 ?
+		token === null ?
 		<h1 style={{color: 'white'}} onClick={login}>
 		LOGIN
 		</h1>

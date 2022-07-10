@@ -9,10 +9,11 @@ import { sanitizeQuery } from '../../lib/queryString'
 import Modal from '../../component/Modal'
 import { ChatContext, ChatValue, RoomData } from '../../context/chatContext'
 
-export function CreateServerModal({modal, setModal, onCreate, message, title}
-: {modal: boolean, setModal: (a: boolean)=>void, onCreate: ()=>void, message: string, title: string}) {
+export function CreateServerModal({modal, setModal, isLoading = false, error = null, onCreate, message, title}
+: {modal: boolean, setModal: (a: boolean)=>void, isLoading?: boolean, error?: null | string,
+onCreate: ()=>void, message: string, title: string}) {
 
-	function close() {
+	function close(e: React.MouseEvent<HTMLElement>) {
 		setModal(false)
 	}
 	return (
@@ -20,8 +21,17 @@ export function CreateServerModal({modal, setModal, onCreate, message, title}
 			<div className='ModalBox' style={{overflow:'unset'}}>
 				<div className='ModalBox__title'>{title}</div>
 				<div className='ModalBox__content' style={{textAlign: 'center'}}>{message}</div>
-				<div className='ModalBox__bottomBox ModalBox__bottomBox' onClick={onCreate}>Yes!</div>
-				<div className='ModalBox__bottomBox ModalBox__bottomBox--b' onClick={close}>no!</div>
+				{isLoading ? <div className='ModalBox__content' style={{textAlign: 'center'}}>loading...</div>
+				: error ?
+					<>
+						<div className='ModalBox__error'>{error}</div>
+						<div className='ModalBox__bottomBox ModalBox__bottomBox--b' onClick={close}>Ok</div>
+					</> :
+					<>
+						<div className='ModalBox__bottomBox ModalBox__bottomBox' onClick={onCreate}>Yes!</div>
+						<div className='ModalBox__bottomBox ModalBox__bottomBox--b' onClick={close}>no!</div>
+					</>
+				}
 			</div>
 		</Modal>
 	)

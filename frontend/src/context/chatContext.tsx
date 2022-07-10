@@ -1,7 +1,8 @@
 import React, {createContext, useReducer, useCallback, useContext, useEffect, useState} from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import fetchWithToken, { checkToken } from '../lib/fetchImprove';
+import { HEADERS } from '..';
+import fetchWithToken, { checkToken, protectedFetch } from '../lib/fetchImprove';
 import { chatReducer } from '../reducer/ChatReducer';
 import { UserContext, UserContextValue, UserContextValueState } from './userContext';
 export const ChatContext = createContext<ChatValue | null>(null);
@@ -10,11 +11,21 @@ export interface RoomData {
 
 	id: number,
 	name: string,
-	messages: [],
+	messages: MessageType[],
 	ownerId: number,
 	password: null | string,
 	type: string,
 	users: []
+}
+export interface User {
+	avatar: string,
+	id: number,
+	name: string
+}
+export interface MessageType {
+
+	User: User,
+	content: string,
 }
 
 export interface ChatState {
@@ -23,7 +34,8 @@ export interface ChatState {
 	channels: RoomData[],
 	rData: RoomData | null,
 	state: {
-		location: string
+		location: string,
+		open: boolean,
 	}
 }
 
@@ -34,17 +46,20 @@ export interface ChatValue {
 	loaded: Map<string, boolean>,
 	sendMessage: (message: string)=>void,
 	setLocation: (location: string, id?: number | undefined)=>void,
-	leaveChannel: (id: number, callback?: ()=>(void))=>void
+	leaveChannel: (id: number, callback?: (data: any)=>(void))=>void
+	deleteChannel: (id: number, callback?: (statusCode: number, statusText: string)=>(void))=>void,
+	setOpen: (direction: boolean)=>void,
 }
 
 interface PayloadChatAction extends ChatState {
 	
 	roomId: number | null
 	channel: any,
-	message: string,
+	message: MessageType,
 	location: string,
 	id: number,
-	user: UserContextValueState
+	user: UserContextValueState,
+	direction: boolean
 }
 
 export interface ChatAction {
@@ -59,12 +74,12 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		channels: [],
 		rData: null,
 		state: {
-			location: '/home'
+			location: '/home',
+			open: false,
 		}
 	}
 	const [chatValue, dispatch] = useReducer(chatReducer, initialeState)
 	const {token, deleteToken, content: user} = useContext(UserContext) as UserContextValue
-	var [searchParams] = useSearchParams()
 	const [loaded] = useState(new Map ([
 		['friends', false],
 		['channels', false],
@@ -83,20 +98,19 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	});
 	}, [dispatch])
 
-	const addChannel = useCallback(
-	(channel: any) => {
-		dispatch({type: "ADD_CHANNEL", payload: {channel}
-	});
-	}, [dispatch])
+	// const addChannel = useCallback(
+	// (channel: any) => {
+	// 	dispatch({type: "ADD_CHANNEL", payload: {channel}
+	// });
+	// }, [dispatch])
 
-	const leaveChannel = useCallback(
-	(id: number, callback?: ()=>(void)) => {
-		dispatch({type: "DELETE_CHANNEL", payload: {id}})
-		if (callback) {callback()}
+	const removeChannel = useCallback(
+	(id: number) => {
+		dispatch({type: "REMOVE_CHANNEL", payload: {id}})
 	}, [dispatch])
 
 	const addMessage = useCallback(
-	(message: string, roomId: number) => {
+	(message: MessageType, roomId: number) => {
 		dispatch({type: "ADD_MESSAGE", payload: {message, roomId}
 	});
 	}, [dispatch])
@@ -112,6 +126,12 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 			dispatch({type: "SET_LOCATION", payload: {location, id, user}
 		});
 	}, [dispatch, user])
+
+	const setOpen = useCallback(
+		(direction: boolean) => {
+			dispatch({type: "SET_OPEN", payload: {direction}
+		});
+		}, [dispatch])
 	/* end reducer */
 
 	/* load all datas */
@@ -126,8 +146,6 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	}, [token, setFriends, loaded, deleteToken])
 
 	const setLoadedChannels = useCallback(
-		
-
 		async function setLoadedChannelsCallback(data: any) {
 
 			if (!token)
@@ -135,8 +153,8 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	
 			var loadedChannels: RoomData[] = []
 			for (var room of data) {
-				var rData = await fetchWithToken<RoomData>({token, deleteToken, url: `/channels/${room.id}?start=0&count=50`})
-				loadedChannels.push(rData)
+				var rData = await fetchWithToken<RoomData>({token, deleteToken, url: `/channels/${room.id}?start=0&count=5`})
+				loadedChannels.push(rData.data)
 			}
 			setChannels(loadedChannels)
 			loaded.set('channels', true)
@@ -169,64 +187,120 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	const createChannel = useCallback(
 		function createChannelCallback(callback: ()=>void) {
 			console.log('hey creating channel, please wait...')
-			checkToken(token, 
-				(token: string)=>fetchWithToken<any>({token, deleteToken, url: `/channels`, method: 'POST',
-					body: {
-						name: 'super channel',
-						type: 'PUBLIC',
-						password: ''
-					},
-					callback: (data: any)=>{
-						console.log(data)
-						// addChannel(data)
-						callback()
-					}})
-			)
+			protectedFetch({
+				token, deleteToken,
+				url: `/channels`, method: 'POST',
+				body: {
+					name: 'super channel!',
+					type: 'PUBLIC',
+					password: ''
+				},
+				onSuccess: (res: Response)=>{
+					res.json().then(res=>console.log(res))
+					callback()
+				}
+			})
 		}
 	, [token, deleteToken])
+	
+	const leaveChannel = useCallback(
+	function leaveChannelCallback(id: number, callback?: (data: any)=>void) {
+		console.log('leave channel...')
+		protectedFetch({
+			token, deleteToken,
+			url: `/channels/${id}/leave`, method: 'DELETE',
+			onSuccess: (res: Response)=>{
+				if (callback)
+					res.json().then((data: any)=>{callback(data)})
+			}
+		})
+		checkToken(
+			token,
+			(token: string)=>{fetchWithToken<any>({
+				token,
+				deleteToken,
+				url: `/channels/${id}/leave`,
+				method: 'DELETE',
+				callback: callback
+			})}
+		)
+	}, [token, deleteToken])
 
+	const deleteChannel = useCallback(
+		function deleteChannelCallback(id: number,
+		onSuccess?: (statusCode: number, message: string)=>void,
+		onFail?: (err: any)=>void) {
+			console.log('delete channel...')
+			protectedFetch({
+				token, deleteToken,
+				url: `/channels/${id}`,
+				method: 'DELETE',
+				onSuccess: (res: Response)=>{
+					if (res.status === 200)
+						removeChannel(id)
+					if (onSuccess) onSuccess(res.status, res.statusText)
+				},
+				onFail: onFail
+			})
+		}, [token, deleteToken, removeChannel])
 	/* end events */
 
 	/* sockets */
 	const [ioChannels, setIoChannels] = useState<Socket<any, any> | null>(null)
 
-	interface Message {
-		channel: number,
-		message: string,
-		user: User
-	}
-	interface User {
-		avatar: string,
-		id: number,
-		name: string
-	}
 	useEffect(()=>{
-		const newIoChannels = io("ws://localhost:3000/channels", { auth: { token }})
 
-		newIoChannels.on("connect", () => {
-			console.info("Socket channels status is connected!")
+		if(!ioChannels)
+			return
+		console.log(ioChannels)
+		
+		ioChannels.on("connect", () => {
+			console.info("Socket channels connected!")
+			// console.log(ioChannels)
 		});
 
-		newIoChannels.on('message', (info) => {
+		ioChannels.on("disconnect", () => {
+			console.info("Socket auto disconnected")
+			setIoChannels(null)
+		});
+
+		ioChannels.on('message', (info: any) => {
 			console.log("message", info)
-			// addMessage(info, info.channel)s
+			if (!info.message && !info.User)
+				return
+			var message: MessageType = {
+				content: info.message,
+				User: info.user
+			}
+			addMessage(message, info.channel)
 		})
 
-		newIoChannels.on('join', (info) => {
+		ioChannels.on('join', (info: any) => {
 			console.log("join", info)
 			// addMessage(info, info.channel)
 		})
 
-		newIoChannels.on('leave', (info) => {
+		ioChannels.on('leave', (info: any) => {
 			console.log("leave", info)
 			// addMessage(info, info.channel)
 		})
 
-		setIoChannels(newIoChannels)
+		ioChannels.on('action', (info: any) => {
+			console.log("action", info)
+		})
+	
+		ioChannels.on('exception', (error: any) => {
+			console.log(error)
+		})
 
-	}, [token, addMessage])
+	}, [ioChannels, addMessage])
+	
 
 	useEffect(() => {
+		if (!token)
+			return
+		const newIo = io("ws://localhost:3000/channels", {auth: { token }})
+		setIoChannels(newIo)
 		return () => {
 			if (ioChannels)
 			{
@@ -235,15 +309,15 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 				setIoChannels(null)
 			}
 		}
-	}, [ioChannels])
+	}, [token])
 	
 	const sendMessage = useCallback(
 	function sendMessageCallback(message: string) {
-		// console.log(`send message: ${message}`)
-		// console.log(chatValue.rData.id)
+		console.log(`send message: ${message}`)
+
 		if (ioChannels && chatValue.rData) {
 			ioChannels.emit("message", {
-					channel: 1,
+					channel: chatValue.rData.id,
 					message: message
 				}, (response: any) => {
 					console.log(response); // ok
@@ -261,7 +335,9 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		loaded: loaded,
 		sendMessage: sendMessage,
 		setLocation: setLocation,
-		leaveChannel: leaveChannel
+		leaveChannel: leaveChannel,
+		deleteChannel: deleteChannel,
+		setOpen: setOpen
 	}
 	return (
 		<ChatContext.Provider value={value}>

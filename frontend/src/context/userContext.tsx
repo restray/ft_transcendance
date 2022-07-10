@@ -27,6 +27,7 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 	function deleteToken() {
 		setToken(null)
 		localStorage.removeItem('userToken')
+		setState({name:'',avatar:'',id:0})
 		console.log('deleting')
 	}
 
@@ -39,7 +40,7 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 						avatar: data.avatar,
 						id: data.id
 					})
-				}})
+				}}).then(data=>console.log(data))
 		)
 	}, [token])
 
@@ -49,6 +50,8 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 
 		if (userToken)
 		{
+			searchParams.delete('code')
+			setSearchParams(searchParams)
 			setToken(userToken)
 			return
 		}

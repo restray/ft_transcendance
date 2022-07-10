@@ -1,6 +1,7 @@
 import { ChatAction, ChatState, RoomData } from "../context/chatContext"
 
 export const chatReducer = (state: ChatState , action: ChatAction ) => {
+	const {location, id, user} = action.payload
     if (action.type === 'SET_FRIENDS') {
 		if (action.payload.friends)
         	state.friends = action.payload.friends
@@ -16,12 +17,12 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 			state.channels.push(action.payload.channel)
 		return {...state}
 	}
-	else if (action.type === 'DELETE_CHANNEL') {
-		if (action.payload.id)
+	else if (action.type === 'REMOVE_CHANNEL') {
+		if (id)
 		{
-			console.log(action.payload.id)
 			state.channels = state.channels.filter((channel: RoomData)=>
 				channel.id !== action.payload.id)
+			state = {...setRoomData(state, id)}
 		}
 		return {...state}
 	}
@@ -29,6 +30,9 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 		if (action.payload.roomId && action.payload.message)
 		{
 			var r = state.channels.find(room=> room.id === action.payload.roomId)
+			if (r)
+				r.messages = [action.payload.message, ...r.messages]
+			console.log(r)
 		}
 		return {...state}
 	}
@@ -40,9 +44,6 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 	// }
 	else if (action.type === 'SET_LOCATION') {
 		////////////////////location
-		var location = action.payload.location
-		var id = action.payload.id
-		var user = action.payload.user
 		if (location === 'home')
 		{
 			state.state.location = 'home'
@@ -63,6 +64,12 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 		////////////////////location
 		return {...state}
 	}
+	else if (action.type === 'SET_OPEN') {
+		if (typeof(action.payload.direction) === 'boolean') {
+			state.state.open = action.payload.direction
+		}
+		return {...state}
+	}
     return state
 }
 
@@ -70,5 +77,7 @@ function setRoomData(state: ChatState, id: number): ChatState {
 	var finded: RoomData | undefined = state.channels.find(room=> room.id === id)
 	if (finded)
 		state.rData = finded
+	else
+		state.state.location = 'home'
 	return {...state}
 }

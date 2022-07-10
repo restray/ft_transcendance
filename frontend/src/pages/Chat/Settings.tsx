@@ -8,6 +8,7 @@ import SaveBox from "../../component/SaveBox"
 import cross from '../../images/cross.svg'
 import Modal from "../../component/Modal"
 import { ChatContext, ChatValue } from "../../context/chatContext"
+import { CreateServerModal } from "./AllChannel"
 
 type ServerProtection = 'Private' | 'Protected' | 'Public'
 
@@ -51,7 +52,7 @@ export function ChannelParameter() {
 	})
 	const [local, setLocal] = useState<RoomOpt>({image: '', name: '',serverProtection: 'Private',pass: '',admin: [],muted: [],banned: []})
 	const [modified, setModified] = useState<boolean>(false)
-	const {setLocation, content: {rData}} = useContext(ChatContext) as ChatValue
+	const {setLocation, content: {rData}, deleteChannel} = useContext(ChatContext) as ChatValue
 
 	useEffect(() => {
 
@@ -119,7 +120,6 @@ export function ChannelParameter() {
 	}
 	/*update local */
 
-
 	function reset() {
 		setLocal(Object.assign({}, global))
 	}
@@ -132,6 +132,34 @@ export function ChannelParameter() {
 			setModified(false)
 
 	}, [local, global])
+
+	/* delete channel + modal */
+	const [deleteModal, setDeleteModal] = useState<boolean>(false)
+	const [isLoading, setIsLoading] = useState<boolean>(false)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(()=>{
+		if (deleteModal === false)
+			setError(null)		
+	}, [deleteModal, setError])
+
+	function eventDeleteChannel() {
+		if (!rData)
+			return
+		setIsLoading(true)
+		deleteChannel(rData.id, (statusCode: number, statusText: string)=>{
+			setIsLoading(false)
+			if (statusCode !== 200)
+				setError(statusText)
+			else {
+				setDeleteModal(false)
+			}
+		})
+	}
+	function openDeleteModal() {
+		setDeleteModal(true)
+	}
+	/* delete channel */
 
 	return (
 		<div className='ChannelParameter--container'>
@@ -158,6 +186,13 @@ export function ChannelParameter() {
 				<Listing name={'Admins'} data={local.admin} setData={setAdmin}/>
 				<Listing name={'Muted'} data={local.muted} setData={setMuted}/>
 				<Listing name={'Banned'} data={local.banned} setData={setBanned}/>
+
+				<div onClick={openDeleteModal}>DELETE CHANNEL</div>
+				<CreateServerModal modal={deleteModal} setModal={setDeleteModal}
+				isLoading={isLoading} error={error}
+				onCreate={eventDeleteChannel} message={`Do you really want to delete "${rData?.name}"?`}
+				title={'Leave room'} />
+
 				{modified && <SaveBox onReset={reset} onSave={()=>console.log('send')}/>}
 			</div>
 		</div>
