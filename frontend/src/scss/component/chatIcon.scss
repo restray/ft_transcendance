@@ -1,20 +1,9 @@
-.chatIcon {
-
-	position: absolute;
-	width: 140px;
-	height: 140px;
-	left: 5px;
-	top: 5px;
-	cursor: pointer;
-	user-select: none;
-	z-index: 999;
-}
 .chatBox {
 	width: 100%;
 	cursor: pointer;
-	display: none;
+	display: flex;
 	justify-content: center;
-	padding: 10px 0;
+	padding: 30px 0;
 
 	img {
 		width: 40px;
@@ -24,10 +13,4 @@
 }
 
 @media screen and (max-width: 700px) {
-	.chatIcon {
-		display: none;
-	}
-	.chatBox {
-		display: flex;
-	}
 }

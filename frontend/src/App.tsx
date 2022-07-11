@@ -8,6 +8,7 @@ import { motion } from "framer-motion"
 import Profile from './pages/Profile';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { UserContext, UserContextValue } from './context/userContext';
+import Settings from './pages/Settings';
 
 function App() {
 	const constraintsRef = useRef(null);
@@ -23,18 +24,13 @@ function App() {
 			<Header />
 			<div className='workZone' ref={constraintsRef}>
 				<ChatIcon constraintsRef={constraintsRef}/>
-				<motion.div
-					className="workZone__page flexContainer"
-					drag
-					dragSnapToOrigin={true}
-					dragConstraints={constraintsRef}
-					dragMomentum={false}
-				>
+				<div className="workZone__page flexContainer">
 						<Routes>
 							<Route path="/" element={<Home />} />
 							<Route path='profile' element={<Profile />} />
+							<Route path='settings' element={<Settings />} />
 						</Routes>
-				</motion.div>
+				</div>
 			</div>
 		</div>
 	);

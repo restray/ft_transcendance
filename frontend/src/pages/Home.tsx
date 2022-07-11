@@ -14,9 +14,6 @@ export default function Home() {
 			<div className={'home__game'}>
 				<Game />
 			</div>
-			<div className={'home__profile'}>
-				<ProfilBox name={'pleveque'} />
-			</div>
 		</div>
 	)
 }
