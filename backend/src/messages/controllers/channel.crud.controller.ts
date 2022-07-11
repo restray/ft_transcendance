@@ -81,10 +81,7 @@ export class ChannelCrudController {
   @ApiOperation({
     summary: 'Recuperer les informations publique de la Room',
   })
-  async getChannelInformation(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req,
-  ) {
+  async getChannelInformation(@Param('id', ParseIntPipe) id: number) {
     const channel = await this.channelService.channel(id);
     if (!channel) throw new NotFoundException('Channel not found');
 

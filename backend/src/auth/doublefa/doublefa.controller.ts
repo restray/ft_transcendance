@@ -15,6 +15,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   ApiBadRequestResponse,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
@@ -29,7 +30,9 @@ import { TwoFACode } from './dto/twoFACode.dto';
 
 @Controller('auth/2fa')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(JwtAuthGuard)
 @ApiSecurity('access-token')
+@ApiTags('Profil')
 export class DoublefaController {
   constructor(
     private readonly twoFAService: DoublefaService,
@@ -39,13 +42,11 @@ export class DoublefaController {
   ) {}
 
   @Post('generate')
-  @UseGuards(JwtAuthGuard)
-  @ApiTags('Profil')
   @ApiOperation({ summary: "Ajouter le 2FA au compte de l'utilisateur" })
   @ApiForbiddenResponse({
     description: "Le 2FA a déjà été activé par l'utilisateur",
   })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     description:
       "L'utilisateur a demandé à activer le 2FA. Il faut qu'il le valide",
     content: { 'image/png': { schema: { type: 'string', format: 'binary' } } },
@@ -58,13 +59,10 @@ export class DoublefaController {
   }
 
   @Post('enable')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(200)
-  @ApiTags('Profil')
   @ApiOperation({
     summary: "L'utilisateur valide le 2FA qu'il a activé précédemment",
   })
-  @ApiOkResponse({ description: "L'utilisateur a bien été mis à jour" })
+  @ApiCreatedResponse({ description: "L'utilisateur a bien été mis à jour" })
   @ApiForbiddenResponse({
     description: "L'utilisateur n'a pas fournis le bon code",
   })
@@ -88,8 +86,6 @@ export class DoublefaController {
   }
 
   @Post('authenticate')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(200)
   @ApiTags('Authentification')
   async authenticate(
     @Req() request,
