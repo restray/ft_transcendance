@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User } from '../context/chatContext';
+import { BACKEND_HOSTNAME } from '../envir';
 import useContextMenu from '../lib/generateMenu';
 
-export function NameWithMenu({user}: {user: User}) {
+export function NameWithMenu({user, link}: {user: User, link?: (location: string)=>void}) {
 
 	const generateMenu = useContextMenu([
 		{
@@ -31,6 +32,11 @@ export function NameWithMenu({user}: {user: User}) {
 	function onClick(e: React.MouseEvent<HTMLElement>) {
 		e.stopPropagation()
 		searchParams.set('userId', String(user.id))
+
+		if (link) {
+			link(`/profile?${searchParams}`)
+			return
+		}
 		navigate(`/profile?${searchParams}`)
 	}
 
@@ -45,13 +51,13 @@ export function NameWithMenu({user}: {user: User}) {
 	)
 }
 
-export default function ProfilBox({user, cName='ProfilBox', precClass=''}:
-{ user: User, cName?: string, precClass?: string }) {
+export default function ProfilBox({link ,user, cName='ProfilBox', precClass=''}:
+{  link?: (location: string)=>void, user: User, cName?: string, precClass?: string }) {
 	return (
 		<div className={`${cName} ${precClass}`}>
-			<div className={`${cName}__image`}></div>
+			<img src={`${BACKEND_HOSTNAME}/${user.avatar}`} alt='' className={`${cName}__image`} />
 			<p className={`${cName}__name`}>
-				<NameWithMenu user={user}/>
+				<NameWithMenu link={link} user={user}/>
 			</p>
 		</div>
 	)

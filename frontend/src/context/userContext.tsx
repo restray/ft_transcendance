@@ -19,7 +19,8 @@ export interface UserContextValue {
 	token: string | null,
 	deleteToken: ()=>void,
     login: ()=>void,
-	updateProfile: (profile: ConnectedUserWithImg, onSuccess: (data: any)=>void)=>void
+	updateProfile: (profile: ConnectedUserWithImg, onSuccess: (data: any)=>void)=>void,
+	enable2fa: ()=>void
 }
 
 export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
@@ -83,6 +84,7 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 				}
             })
         }
+		searchParams.delete('code')
 		setSearchParams(searchParams)
     }, [])
 
@@ -111,13 +113,18 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 			}
 		})
 	}
+	function enable2fa() {
+		state.otp_enable = true
+		setState({...state})
+	}
 
 const value: UserContextValue = {
         content: state,
-        token: token,
-		deleteToken: deleteToken,
-        login: login,
-		updateProfile
+        token,
+		deleteToken,
+        login,
+		updateProfile,
+		enable2fa
     }
     return (
         <UserContext.Provider value={value}>

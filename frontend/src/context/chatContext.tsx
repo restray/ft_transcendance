@@ -1,7 +1,8 @@
 import React, {createContext, useReducer, useCallback, useContext, useEffect, useState} from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { HEADERS } from '..';
+import { BACKEND_HOSTNAME } from '../envir';
 import fetchWithToken, { checkToken, protectedFetch } from '../lib/fetchImprove';
 import { chatReducer } from '../reducer/ChatReducer';
 import { UserContext, UserContextValue } from './userContext';
@@ -53,6 +54,7 @@ export interface ChatValue {
 	leaveChannel: (id: number, callback?: (data: any)=>(void))=>void
 	deleteChannel: (id: number, callback?: (statusCode: number, statusText: string)=>(void))=>void,
 	setOpen: (direction: boolean)=>void,
+	chatLink: (location: string)=>void
 }
 
 interface PayloadChatAction extends ChatState {
@@ -124,7 +126,6 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	// 	dispatch({type: "SET_ROOM_DATA", payload: {roomId}
 	// });
 	// }, [dispatch])
-
 	const setLocation = useCallback(
 		(location: string, id?: number | undefined) => {
 			dispatch({type: "SET_LOCATION", payload: {location, id, user}
@@ -149,22 +150,23 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		)
 	}, [token, setFriends, loaded, deleteToken])
 
-	const setLoadedChannels = useCallback(
-		async function setLoadedChannelsCallback(data: any) {
+	// const setLoadedChannels = useCallback(
+	// 	async function setLoadedChannelsCallback(data: any) {
 
-			if (!token)
-				return
+
+	// 		if (!token)
+	// 			return
 	
-			var loadedChannels: RoomData[] = []
-			for (var room of data) {
-				var rData = await fetchWithToken<RoomData>({token, deleteToken, url: `/channels/${room.id}?start=0&count=5`})
-				loadedChannels.push(rData.data)
-			}
-			setChannels(loadedChannels)
-			loaded.set('channels', true)
-		},
-		[token, setChannels, loaded, deleteToken]
-	)
+	// 		var loadedChannels: RoomData[] = []
+	// 		for (var room of data) {
+	// 			var rData = await fetchWithToken<RoomData>({token, deleteToken, url: `/channels/${room.id}?start=0&count=5`})
+	// 			loadedChannels.push(rData.data)
+	// 		}
+	// 		setChannels(loadedChannels)
+	// 		loaded.set('channels', true)
+	// 	},
+	// 	[token, setChannels, loaded, deleteToken]
+	// )
 	
 	useEffect(()=>{
 		
@@ -173,9 +175,12 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 			token,
 		 	deleteToken,
 			url: `/channels`, 
-			callback: (data: any)=>{setLoadedChannels(data)}
+			callback: (data: any)=>{
+				setChannels(data)
+				loaded.set('channels', true)
+			}
 		}))
-	}, [token, setLoadedChannels, deleteToken])
+	}, [token, deleteToken])
 
 	// useEffect(() => {
 	// 	var roomId: string | null = searchParams.get('roomId')
@@ -247,6 +252,12 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 				onFail: onFail
 			})
 		}, [token, deleteToken, removeChannel])
+
+	const navigate = useNavigate()
+	function chatLink(location: string) {
+		setOpen(false)
+		navigate(`${location}`)
+	}
 	/* end events */
 
 	/* sockets */
@@ -342,7 +353,8 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		setLocation: setLocation,
 		leaveChannel: leaveChannel,
 		deleteChannel: deleteChannel,
-		setOpen: setOpen
+		setOpen: setOpen,
+		chatLink: chatLink
 	}
 	return (
 		<ChatContext.Provider value={value}>

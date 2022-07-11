@@ -1,13 +1,15 @@
-import { useContext, useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import ReactTextareaAutosize from "react-textarea-autosize";
 import MatchMakingButton from "../../component/MatchMakingBox";
 import { NameWithMenu } from "../../component/ProfilBox";
-import { ChatContext, ChatValue, MessageType } from "../../context/chatContext";
+import { ChatContext, ChatValue, MessageType, User } from "../../context/chatContext";
 import { UserContext, UserContextValue } from "../../context/userContext";
 import game from '../../images/game.svg'
 import send from '../../images/send.svg'
 
-function Message({ content, user, direction='left' }: { content: string, user: string, direction?: string }) {
+function Message({ content, user, direction='left' }: { content: string, user: User, direction?: string }) {
+	
+	const {chatLink} = useContext(ChatContext) as ChatValue
 
 	if (direction === 'right')
 	{
@@ -16,20 +18,20 @@ function Message({ content, user, direction='left' }: { content: string, user: s
 				<div className='Message__data'>
 					<p className='Message__name Message__right__name'>
 						<span className='Message__date Message__right__date'>11:52</span>
-						{/* <NameWithMenu name={user} /> */}
+						<NameWithMenu user={user} link={chatLink}/>
 					</p>
 					<div className='Message__content Message__right__content'>{content}</div>
 				</div>
-				<div className='Message__image Message__right__image'></div>
+			<img src={user.avatar} alt='' className='Message__image Message__right__image' />
 			</div>
 		)
 	}
 	return (
 		<div className='Message'>
-			<div className='Message__image Message__left__image'></div>
+			<img src={user.avatar} alt='' className='Message__image Message__left__image' />
 			<div className='Message__data'>
 				<p className='Message__name'>
-					{/* <NameWithMenu name={user} /> */}
+					<NameWithMenu user={user} link={chatLink}/>
 					<span className='Message__date Message__left__date'>11:52</span>
 				</p>
 				<div className='Message__content Message__left__content'>{content}</div>
@@ -72,6 +74,9 @@ export default function ChatUi() {
 	}
 	function onClickSendMessage(e: React.MouseEvent<HTMLDivElement>) {
 		e.stopPropagation()
+		sendMessageEvent()
+	}
+	function sendMessageEvent() {
 		if (value.length === 0)
 		{
 			console.log('empty message!')
@@ -80,20 +85,28 @@ export default function ChatUi() {
 		sendMessage(value)
 		setValue('')
 	}
-	// console.log(rData)
+	function enterSendMessage(e: React.KeyboardEvent<HTMLDivElement>) {
+		e.stopPropagation()
+		if (e.key === 'Enter')
+		{
+			e.preventDefault()
+			sendMessageEvent()
+		}
+	}
+
 	return (
 		<div className='ChatUi'>
 			<div className='ChatUi__message'>
 				<div className='ChatUi__message__container'>
 					{rData && rData.messages.slice(0).reverse().map((msg: MessageType, index: number)=>{
 						if (msg.User.id === id)
-							return <Message direction={'right'} content={msg.content} user={msg.User.name} key={index}/>
-						return <Message content={msg.content} user={msg.User.name} key={index}/>
+							return <Message direction={'right'} content={msg.content} user={msg.User} key={index}/>
+						return <Message content={msg.content} user={msg.User} key={index}/>
 					})
 					}
 				</div>
 			</div>
-			<div className='ChatUi__input' onClick={focus}>
+			<div className='ChatUi__input' onClick={focus} onKeyDown={enterSendMessage}>
 				<ReactTextareaAutosize
 				ref={ref}
 				onChange={ev => setValue(ev.target.value)}

@@ -92,6 +92,7 @@ function RoomUsers({rData}: {rData: RoomData}) {
 
 	const [windowDimensions] = useState(getWindowDimensions())
 	const [open, setOpen] = useState<boolean>(false)
+	const {chatLink} = useContext(ChatContext) as ChatValue
 
 	useEffect(()=>{
 		if (windowDimensions.width > 700)
@@ -127,8 +128,9 @@ function RoomUsers({rData}: {rData: RoomData}) {
 							Admins -
 						</div>
 						{rData.users.map((user: any)=>{
+							console.log(user)
 							if (user.state === 'ADMIN')
-								// return <ProfilBox key={user.user.id} name={user.user.name} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
+								return <ProfilBox link={chatLink} key={user.user.id} user={user.user} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
 							return null
 						})}
 					</div>
@@ -139,7 +141,7 @@ function RoomUsers({rData}: {rData: RoomData}) {
 						</div>
 						{rData.users.map((user: any)=>{
 							if (user.state === 'USER')
-								// return <ProfilBox key={user.user.id} name={user.user.name} cName={'RoomUsers__section__profile'} />
+								return <ProfilBox link={chatLink} key={user.user.id} user={user} cName={'RoomUsers__section__profile'} />
 							return null
 						})}
 					</div>
@@ -298,7 +300,7 @@ export default function Chat() {
 
 function getChannelRoute(route: string | null, friends: any[], rData: RoomData | null) {
 
-	if (route === null || route === 'home')
+	if (rData === null || route === null || route === 'home')
 		return (<ChatHome friends={friends}/>)
 	else if (route === 'room/home')
 		return (<ChatChannelHome rData={rData}/>)
@@ -323,12 +325,12 @@ function ChatHome({friends}: {friends: any[]}) {
 }
 
 
-function ChatChannelHome({rData}: {rData: RoomData | null}) {
+function ChatChannelHome({rData}: {rData: RoomData}) {
 
 	return (
 		<div className='Chat__right__room'>
 		<ChatUi />
-		{rData !== null && <RoomUsers rData={rData}/>}
+		<RoomUsers rData={rData}/>
 		</div>
 	)
 }
