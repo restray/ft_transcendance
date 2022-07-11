@@ -7,6 +7,9 @@ import { ChannelCrudController } from './controllers/channel.crud.controller';
 import { ChannelActionController } from './controllers/channel.actions.controller';
 import { MessagesService } from './messages.service';
 import { JwtService } from '@nestjs/jwt';
+import { ChannelPrivateController } from './controllers/channel.private.controller';
+import { DmService } from 'src/prisma/dm/dm.service';
+import { FriendsService } from 'src/prisma/friends/friends.service';
 
 @Module({
   providers: [
@@ -16,7 +19,13 @@ import { JwtService } from '@nestjs/jwt';
     ChannelsService,
     MessagesService,
     JwtService,
+    DmService,
+    FriendsService,
   ],
-  controllers: [ChannelCrudController, ChannelActionController],
+  controllers: [
+    ChannelCrudController,
+    ChannelActionController,
+    ChannelPrivateController,
+  ],
 })
 export class MessagesModule {}

@@ -18,7 +18,16 @@ import {
   UserService,
 } from 'src/prisma/user/user.service';
 import { Server } from 'socket.io';
-import { Channel, ChannelUserStatus } from '@prisma/client';
+import {
+  Channel,
+  ChannelUserStatus,
+  DMChannel,
+  DMChannelMessage,
+  FriendShipStatus,
+  User,
+} from '@prisma/client';
+import { DmService } from 'src/prisma/dm/dm.service';
+import { FriendsService } from 'src/prisma/friends/friends.service';
 
 @WebSocketGateway({
   namespace: 'channels',
@@ -32,6 +41,8 @@ export class ChannelsGateway implements NestGateway {
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    private readonly dmService: DmService,
+    private readonly friendService: FriendsService,
   ) {}
 
   @WebSocketServer()
@@ -79,6 +90,51 @@ export class ChannelsGateway implements NestGateway {
         id: socket.user.id,
         name: socket.user.name,
         avatar: localUploadToURL(socket.user.avatar),
+      },
+    });
+
+    return 'ok';
+  }
+
+  @SubscribeMessage('dm_message')
+  async handleDMMessage(
+    @MessageBody('user', ParseIntPipe) user_id: number,
+    @MessageBody('message') message: string,
+    @ConnectedSocket() socket: AuthSocket,
+  ) {
+    if (message.length <= 0 || message.length > 2500)
+      throw new WsException('Message too long');
+
+    // Check Friendship status
+    const friends: { status: FriendShipStatus; requester: User } | null =
+      await this.friendService.friendsWith(
+        { id: socket.user.id },
+        { id: user_id },
+      );
+    if (!friends || friends.status != FriendShipStatus.ACCEPTED)
+      throw new WsException('Users are not friends');
+
+    const dmChannel: DMChannel | null = await this.dmService.channel({
+      DMChannelUser: {
+        every: {
+          OR: [{ userId: socket.user.id }, { userId: user_id }],
+        },
+      },
+    });
+    if (!dmChannel) throw new WsException('User not in channel');
+
+    const sentMessage: DMChannelMessage = await this.dmService.sendMessage(
+      dmChannel,
+      socket.user,
+      message,
+    );
+
+    socket.broadcast.to(`dm-channel-${dmChannel.id}`).emit('message', {
+      ...sentMessage,
+      user: {
+        id: socket.user.id,
+        name: socket.user.name,
+        avatar: socket.user.avatar,
       },
     });
 
