@@ -93,6 +93,13 @@ export class UserService implements OnModuleInit {
       data: {
         avatar: user.avatar,
         name: user.name,
+        otp_enable: user.otp_enable,
+      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        otp_enable: true,
       },
     });
   }

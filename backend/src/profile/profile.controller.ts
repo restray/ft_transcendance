@@ -113,7 +113,11 @@ export class ProfileController {
     }
 
     let newPseudo = req.user.name;
-    if (updateDto.name && updateDto.name != newPseudo) {
+    if (
+      updateDto.name &&
+      updateDto.name != newPseudo &&
+      updateDto.name.length < 50
+    ) {
       const userSameName = await this.userService.user({
         name: updateDto.name,
       });
@@ -125,10 +129,12 @@ export class ProfileController {
     if (newImage == req.user.avatar && newPseudo == req.user.name)
       throw new BadRequestException();
 
+    if (!updateDto.otp_enabled) req.user.otp_enabled = false;
+    else throw new BadRequestException("Can't define 2FA in this part.");
+
     req.user.name = newPseudo;
     req.user.avatar = newImage;
-    await this.userService.updateUser(req.user);
-    return 'ok';
+    return await this.userService.updateUser(req.user);
   }
 
   @Get('/:id')
