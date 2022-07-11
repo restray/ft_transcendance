@@ -22,131 +22,102 @@ function compareInterval( IntValOne: number, IntValTwo: number, IntCmpValOne: nu
 	return false;
 }
 
-
-
-function player1( gameId: string, gameData: gameData ) {
+function player( gameId: string, gameData: gameData, side: string ) {
 
 	// const gameUnit : number = 10000;
 	function getRealY( y: number ) : number {
 		return y * (gameData.height - gameData.playerHeight) / gameData.gameUnit;
 	}
 	var incr = (incr : number) => {
-		gameData.playerOneY += incr;
-		gameData.playerOneY = gameData.playerOneY < 0 ? 0 : gameData.playerOneY;
-		gameData.playerOneY = gameData.playerOneY > gameData.gameUnit ? gameData.gameUnit : gameData.playerOneY;
+		if (side === "left") {
+			gameData.playerOneY += incr;
+			gameData.playerOneY = gameData.playerOneY < 0 ? 0 : gameData.playerOneY;
+			gameData.playerOneY = gameData.playerOneY > gameData.gameUnit ? gameData.gameUnit : gameData.playerOneY;
+		}
+		else {
+			gameData.playerTwoY += incr;
+			gameData.playerTwoY = gameData.playerTwoY < 0 ? 0 : gameData.playerTwoY;
+			gameData.playerTwoY = gameData.playerTwoY > gameData.gameUnit ? gameData.gameUnit : gameData.playerTwoY;
+		}
 	}
 	var keycode : number = -1;
 	var speed : number = 0;
 	const maxSpeed : number = 100;
 	const friction : number = 4;
 
-	function createElem( direction: string ) {
+	function createElem() {
 		var createElem = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-		createElem.setAttribute('x', `${gameData.widthUnit*5}`)
+		if (side === "left")
+			createElem.setAttribute('x', `${gameData.widthUnit*5}`)
+		else
+			createElem.setAttribute('x', `${gameData.width - gameData.widthUnit*5 - gameData.playerWidth}`)
 		createElem.setAttribute('y', '0')
 		createElem.setAttribute('width', `${gameData.playerWidth}`);
 		createElem.setAttribute('height', `${gameData.playerHeight}`);
 		createElem.setAttribute('fill', `black`);
 		return createElem;
 	}
-	var leftPlayer = createElem('left');
+	var player = createElem();
 
 	var elem = document.getElementById(gameId);
 	var root = document.getElementById('root');
 	if (!elem || !root)
 		return;
 
-	elem.appendChild(leftPlayer);
-	
-	root.addEventListener('keydown', (event) => {
-		if (event.keyCode !== 68 && event.keyCode !== 65)
-			return;
-		keycode = event.keyCode;
-	});
+	elem.appendChild(player);
+	if (side === "left")
+	{
+		root.addEventListener('keydown', (event) => {
+			if (event.keyCode !== 68 && event.keyCode !== 65)
+				return;
+			keycode = event.keyCode;
+		});
+	}
+	else
+	{
+		root.addEventListener('keydown', (event) => {
+			if (event.keyCode !== 37 && event.keyCode !== 39)
+				return;
+			keycode = event.keyCode;
+		});
+	}
 	root.addEventListener('keyup', (event) => {
 		if (keycode === event.keyCode)
 		{
 			keycode = -1;
 		}
 	});
+
 	setInterval(() => {
-		
 		//time
-		if (keycode === 68 && speed < maxSpeed)
-			speed += friction;
-		else if (keycode === 65 && speed > -maxSpeed)
-			speed -= friction;
-		incr(speed);
-		if (speed !== 0 && keycode === -1)
-			speed = speed > 0 ? speed - friction : speed + friction;
-
-		leftPlayer.style.transform = `translateY(${getRealY(gameData.playerOneY)}px)`;
-		if (gameData.reset === true)
-			gameData.playerOneY = gameData.gameUnit / 2;
-	}, 1);
-}
-
-function player2( gameId: string, gameData: gameData ) {
-
-	// const gameUnit : number = 10000;
-	function getRealY( y: number ) : number {
-		return y * (gameData.height - gameData.playerHeight) / gameData.gameUnit;
-	}
-	var incr = (incr : number) => {
-		gameData.playerTwoY += incr;
-		gameData.playerTwoY = gameData.playerTwoY < 0 ? 0 : gameData.playerTwoY;
-		gameData.playerTwoY = gameData.playerTwoY > gameData.gameUnit ? gameData.gameUnit : gameData.playerTwoY;
-	}
-	var keycode : number = -1;
-	var speed : number = 0;
-	const maxSpeed : number = 100;
-	const friction : number = 4;
-
-	function createElem( direction: string ) {
-		var createElem = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-
-		createElem.setAttribute('x', `${gameData.width - gameData.widthUnit*5 - gameData.playerWidth}`)
-		createElem.setAttribute('y', '0')
-		createElem.setAttribute('width', `${gameData.playerWidth}`);
-		createElem.setAttribute('height', `${gameData.playerHeight}`);
-		createElem.setAttribute('fill', `black`);
-		return createElem;
-	}
-	var rightPlayer = createElem('right');
-
-	var elem = document.getElementById(gameId);
-	var root = document.getElementById('root');
-	if (!elem || !root)
-		return;
-
-	elem.appendChild(rightPlayer);
-	
-	root.addEventListener('keydown', (event) => {
-		if (event.keyCode !== 37 && event.keyCode !== 39)
-			return;
-		keycode = event.keyCode;
-	});
-	root.addEventListener('keyup', (event) => {
-		if (keycode === event.keyCode)
+		if (side === "left")
 		{
-			keycode = -1;
+			if (keycode === 68 && speed < maxSpeed)
+				speed += friction;
+			else if (keycode === 65 && speed > -maxSpeed)
+				speed -= friction;
 		}
-	});
-	
-	setInterval(() => {
-		
-		//time
-		if (keycode === 39 && speed < maxSpeed)
-			speed += friction;
-		else if (keycode === 37 && speed > -maxSpeed)
-			speed -= friction;
+		else
+		{
+			if (keycode === 39 && speed < maxSpeed)
+				speed += friction;
+			else if (keycode === 37 && speed > -maxSpeed)
+				speed -= friction;
+		}
 		incr(speed);
 		if (speed !== 0 && keycode === -1)
 			speed = speed > 0 ? speed - friction : speed + friction;
 
-		rightPlayer.style.transform = `translateY(${getRealY(gameData.playerTwoY)}px)`;
-		if (gameData.reset === true)
-			gameData.playerTwoY = gameData.gameUnit / 2;
+		if (side === "left") {
+			player.style.transform = `translateY(${getRealY(gameData.playerOneY)}px)`;
+			if (gameData.reset === true)
+				gameData.playerOneY = gameData.gameUnit / 2;
+		}
+		else {
+			player.style.transform = `translateY(${getRealY(gameData.playerTwoY)}px)`;
+			if (gameData.reset === true)
+				gameData.playerTwoY = gameData.gameUnit / 2;
+		}
 	}, 1);
 }
 
@@ -243,10 +214,6 @@ function ball( gameId: string, gameData: gameData ) {
 		}
 	},);
 	
-	// scoreLeft.textContent = "";
-	// scoreRight.textContent = "";
-	// scoreLeft.textContent = "0";
-	// scoreRight.textContent = "0";
 	setInterval( () => {
 		if (keycode === 68 || keycode === 65 || keycode === 39 || keycode === 37)
 		{
@@ -255,44 +222,52 @@ function ball( gameId: string, gameData: gameData ) {
 		}
 		if (start === true)
 		{
+			console.log(getRealYplayer(gameData.playerTwoY));
+			console.log(getRealYplayer(gameData.playerOneY));
 			if (updwn === false)
 			{
 				incrY(speed);
-				if (getRealY(y) + Number(ball.getAttribute("r")) === Math.floor(getRealYplayer(gameData.playerOneY))
+				if (getRealY(y) + Number(ball.getAttribute("r")) === getRealYplayer(gameData.playerOneY)
 				&& compareInterval(getRealX(x) - Number(ball.getAttribute("r")), getRealX(x) + Number(ball.getAttribute("r")), 
 				gameData.widthUnit*5, gameData.widthUnit*5 + gameData.playerWidth))
 					updwn = true;
-					if (getRealY(y) + Number(ball.getAttribute("r")) === Math.floor(getRealYplayer(gameData.playerTwoY))
+				if (getRealY(y) + Number(ball.getAttribute("r")) === getRealYplayer(gameData.playerTwoY)
 				&& compareInterval(getRealX(x) - Number(ball.getAttribute("r")), getRealX(x) + Number(ball.getAttribute("r")), 
 				gameData.width - gameData.widthUnit*5 - gameData.playerWidth, gameData.width - gameData.widthUnit*5))
 					updwn = true;
 					//Lower Boundary
-					if (getRealY(y) === gameData.height - Number(ball.getAttribute("r")))
-					updwn = true;
+					if (getRealY(y) === gameData.height - Number(ball.getAttribute("r"))) {
+						updwn = true;
+						// speed += 10;
+						// console.log();
+					}
 				}
+			console.log(getRealY(y));
 			if (updwn === true)
 			{
 				dcrY(speed);
 				//PlayerOne
-				if (getRealY(y) - Number(ball.getAttribute("r")) === Math.floor(getRealYplayer(gameData.playerOneY)) + gameData.playerHeight
+				if (getRealY(y) - Number(ball.getAttribute("r")) === getRealYplayer(gameData.playerOneY) + gameData.playerHeight
 				&& compareInterval(getRealX(x) - Number(ball.getAttribute("r")), getRealX(x) + Number(ball.getAttribute("r")), 
 				gameData.widthUnit*5, gameData.widthUnit*5 + gameData.playerWidth))
 					updwn = false; 
 				//PlayerTwo
-				if (getRealY(y) - Number(ball.getAttribute("r")) === Math.floor(getRealYplayer(gameData.playerTwoY)) + gameData.playerHeight
+				if (getRealY(y) - Number(ball.getAttribute("r")) === getRealYplayer(gameData.playerTwoY) + gameData.playerHeight
 				&& compareInterval(getRealX(x) - Number(ball.getAttribute("r")), getRealX(x) + Number(ball.getAttribute("r")), 
 				gameData.width - gameData.widthUnit*5 - gameData.playerWidth, gameData.width - gameData.widthUnit*5))
 					updwn = false;
 				//Upper Boundary
-				if (getRealY(y) === Number(ball.getAttribute("r")))
+				if (getRealY(y) === Number(ball.getAttribute("r"))) {
 					updwn = false;
+					// speed += 10;
+				}
 			}
 			if (lr === false)
 			{
 				incrX(speed);
 				if ((gameData.width - gameData.widthUnit*5 - gameData.playerWidth - Number(ball.getAttribute("r")) / 2 === getRealX(x)
 				&& compareInterval(getRealY(y) - Number(ball.getAttribute("r")), getRealY(y) + Number(ball.getAttribute("r")),getRealYplayer(gameData.playerTwoY), getRealYplayer(gameData.playerTwoY) + gameData.playerHeight)))
-				lr = true;
+					lr = true;
 				if (getRealX(x) === gameData.width - Number(ball.getAttribute("r")))
 				{
 					//Right Goal
@@ -312,7 +287,7 @@ function ball( gameId: string, gameData: gameData ) {
 				if ((gameData.widthUnit*5 + gameData.playerWidth + Number(ball.getAttribute("r")) === getRealX(x) 
 				&& compareInterval(getRealY(y) - Number(ball.getAttribute("r")), getRealY(y) + Number(ball.getAttribute("r")), 
 				getRealYplayer(gameData.playerOneY), getRealYplayer(gameData.playerOneY) + gameData.playerHeight)))
-				lr = false;
+					lr = false;
 				if (getRealX(x) <= Number(ball.getAttribute("r")))
 				{
 					//left Goal
@@ -328,14 +303,10 @@ function ball( gameId: string, gameData: gameData ) {
 			}
 			if (start === true)
 				ball.style.transform = `translate(${getRealX(x) - 400}px, ${getRealY(y) - 200}px)`;
-				console.log(gameData.scorePlayerOne);
-				console.log(gameData.scorePlayerTwo);
 				// if (speed !== 0 && keycode === -1)
 				// speed = speed > 0 ? speed - friction : speed + friction;
 			}
-			
-			if (gameData.scorePlayerTwo === 4 || gameData.scorePlayerOne === 4)
-			{
+			if (gameData.scorePlayerTwo === 4 || gameData.scorePlayerOne === 4) {
 					gameData.scorePlayerTwo = 0;
 					gameData.scorePlayerOne = 0;
 			}
@@ -366,11 +337,11 @@ export default function Game() {
 
 	useEffect(() => {
 		ball( gameId, gameData );
-		player1( gameId, gameData );
-		player2( gameId, gameData );
+		player( gameId, gameData, "right" );
+		player( gameId, gameData,"left" );
+		// player1( gameId, gameData );
 	})
 	
-
 	/* player */
 	return (
 		<div className='gameArena' tabIndex={-1}>
