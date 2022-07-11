@@ -11,14 +11,14 @@ import { UserContext, UserContextValue } from './context/userContext';
 
 function App() {
 	const constraintsRef = useRef(null);
-    const { content } = useContext(UserContext) as UserContextValue;
-
-	useEffect(()=>{
-
-	}, [content])
+    const { content, token, login } = useContext(UserContext) as UserContextValue;
 
 	return (
-		content !== null ?
+		token === null ?
+		<h1 style={{color: 'white'}} onClick={login}>
+		LOGIN
+		</h1>
+		:
 		<div className="App">
 			<Header />
 			<div className='workZone' ref={constraintsRef}>
@@ -37,10 +37,6 @@ function App() {
 				</motion.div>
 			</div>
 		</div>
-		:
-		<h1 style={{color: 'white'}}>
-			LOGIN
-		</h1>
 	);
 }
 

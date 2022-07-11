@@ -26,6 +26,11 @@ $dark-grey: #8F8A8A;
 			background-color: $grey;
 			aspect-ratio: 1/1;
 			cursor: pointer;
+			transition: transform 0.1s ease-out;
+			&:hover
+			{
+				transform: scale(1.1);
+			}
 		}
 		padding: 7px 0;
 		z-index: 3;
@@ -106,10 +111,12 @@ $dark-grey: #8F8A8A;
 		scrollbar-width: none;
 		position: relative;
 		width: fit-content;
+		min-height: 100%;
 	}
 	max-width: 240px;
 	min-width: 240px;
 	padding: 10px 20px;
+	min-height: 100%;
 	box-sizing: border-box;
 	background-color: $grey;
 	color: black;

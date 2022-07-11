@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import _ from 'lodash'
 import InvisibleInput, { InvisibleInputSelect } from "../../component/InvisibleInput"
@@ -7,6 +7,8 @@ import Listing from "../../component/Listing"
 import SaveBox from "../../component/SaveBox"
 import cross from '../../images/cross.svg'
 import Modal from "../../component/Modal"
+import { ChatContext, ChatValue } from "../../context/chatContext"
+import { CreateServerModal } from "./AllChannel"
 
 type ServerProtection = 'Private' | 'Protected' | 'Public'
 
@@ -50,8 +52,21 @@ export function ChannelParameter() {
 	})
 	const [local, setLocal] = useState<RoomOpt>({image: '', name: '',serverProtection: 'Private',pass: '',admin: [],muted: [],banned: []})
 	const [modified, setModified] = useState<boolean>(false)
-	useEffect(() => {setLocal(Object.assign({}, global))}, [global])
-	var [searchParams, setSearchParams] = useSearchParams()
+	const {setLocation, content: {rData}, deleteChannel} = useContext(ChatContext) as ChatValue
+
+	useEffect(() => {
+
+		if (!rData)
+			return
+		global.name = rData.name
+		setGlobal({...global})
+	},
+	[rData])
+
+	useEffect(() => {
+		setLocal({...global})
+	},
+	[global])
 
 	const [modal, setModal] = useState<boolean>(false)
 
@@ -67,67 +82,84 @@ export function ChannelParameter() {
 	}
 
 	function goHome() {
-		searchParams.set('roomLocation', 'room/home')
-		setSearchParams(searchParams, {replace: true})
+		setLocation('room/home', rData?.id)
 	}
 
 	/*update local */
 	function setImage(image: any) {
-		var newLocal: RoomOpt = Object.assign({}, local);
-		newLocal.image = image
-		setLocal(newLocal)
+		local.image = image
+		setLocal({...local})
 	}
 	function resetImage() {
-		var newLocal: RoomOpt = Object.assign({}, local);
-		newLocal.image = global.image
-		setLocal(newLocal)
+		local.image = global.image
+		setLocal({...local})
 	}
 	function setServerProtection(value: string) {
-		var newLocal: RoomOpt = Object.assign({}, local);
-		newLocal.serverProtection = value
-		setLocal(newLocal)
+		local.serverProtection = value
+		setLocal({...local})
 	}
 	function setAdmin(admins: string[]) {
-		var newLocal: RoomOpt = Object.assign({}, local);
-		newLocal.admin = admins
-		setLocal(newLocal)
+		local.admin = admins
+		setLocal({...local})
 	}
 	function setMuted(muteds: string[]) {
-		var newLocal: RoomOpt = Object.assign({}, local);
-		newLocal.muted = muteds
-		setLocal(newLocal)
+		local.muted = muteds
+		setLocal({...local})
 	}
 	function setBanned(banneds: string[]) {
-		var newLocal: RoomOpt = Object.assign({}, local);
-		newLocal.banned = banneds
-		setLocal(newLocal)
+		local.banned = banneds
+		setLocal({...local})
 	}
 	function setRoomName(name: string) {
-		var newLocal: RoomOpt = Object.assign({}, local);
-		newLocal.name = name
-		setLocal(newLocal)
+		local.name = name
+		setLocal({...local})
 	}
 	function setRoomPass(pass: string) {
-		var newLocal: RoomOpt = Object.assign({}, local);
-		newLocal.pass = pass
-		setLocal(newLocal)
+		local.pass = pass
+		setLocal({...local})
 	}
 	/*update local */
-
-	function compareState() {
-		if (_.isEqual(local, global) === false)
-			setModified(true)
-		else
-			setModified(false)
-	}
 
 	function reset() {
 		setLocal(Object.assign({}, global))
 	}
 
 	useEffect(() => {
-		compareState()
-	}, [local])
+
+		if (_.isEqual(local, global) === false)
+			setModified(true)
+		else
+			setModified(false)
+
+	}, [local, global])
+
+	/* delete channel + modal */
+	const [deleteModal, setDeleteModal] = useState<boolean>(false)
+	const [isLoading, setIsLoading] = useState<boolean>(false)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(()=>{
+		if (deleteModal === false)
+			setError(null)		
+	}, [deleteModal, setError])
+
+	function eventDeleteChannel() {
+		if (!rData)
+			return
+		setIsLoading(true)
+		deleteChannel(rData.id, (statusCode: number, statusText: string)=>{
+			setIsLoading(false)
+			if (statusCode !== 200)
+				setError(statusText)
+			else {
+				setDeleteModal(false)
+			}
+		})
+	}
+	function openDeleteModal() {
+		setDeleteModal(true)
+	}
+	/* delete channel */
 
 	return (
 		<div className='ChannelParameter--container'>
@@ -154,6 +186,13 @@ export function ChannelParameter() {
 				<Listing name={'Admins'} data={local.admin} setData={setAdmin}/>
 				<Listing name={'Muted'} data={local.muted} setData={setMuted}/>
 				<Listing name={'Banned'} data={local.banned} setData={setBanned}/>
+
+				<div onClick={openDeleteModal}>DELETE CHANNEL</div>
+				<CreateServerModal modal={deleteModal} setModal={setDeleteModal}
+				isLoading={isLoading} error={error}
+				onCreate={eventDeleteChannel} message={`Do you really want to delete "${rData?.name}"?`}
+				title={'Leave room'} />
+
 				{modified && <SaveBox onReset={reset} onSave={()=>console.log('send')}/>}
 			</div>
 		</div>

@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import ProfilBox, { NameWithMenu } from '../component/ProfilBox'
 import Page404 from './Page404'
 import addFriend from '../images/friendAdd.svg'
 import block from '../images/block.svg'
 import send from '../images/send.svg'
+import { UserContext, UserContextValue } from '../context/userContext'
+import { setConstantValue } from 'typescript'
+import { HEADERS } from '..'
 
 interface resumeGame {
 	date: string,
@@ -71,14 +74,46 @@ function Winrate() {
 export default function Profile() {
 
 	var [searchParams, setSearchParams] = useSearchParams();
+	const { token } = useContext(UserContext) as UserContextValue;
+	const [state, setState] = useState<string>('loading')
+
 	var name = searchParams.get("name");
-	if (!name)
+
+	useEffect(()=>{
+		if (name && token)
+		{
+			// fetch(`http://localhost:3000/profile`, {
+			// method: 'GET',
+			// headers: { ...HEADERS, 'Authorization': `Bearer ${token}`},
+			// }).then(response => response.json())
+			// .then(data: {name:string, avatar: string} => {
+			// 	console.log(data)
+			// 	if (data.statusCode === 401)
+			// 		localStorage.removeItem('userToken')
+			// 	else {
+			// 		setState({
+			// 			name: data.name,
+			// 			avatar: data.avatar
+			// 		})
+			// 		setToken(access_token)
+			// 	}
+			// }).catch(()=>{})
+			setState('valid')
+		}
+		else
+			setState('invalid')
+	}, [searchParams])
+
+	if (state === 'loading')
+	return (
+		<Page404 message={`Profile is loading`} />
+	)
+	else if (state === 'invalid' || name === null)
 	return (
 		<Page404 message={`Can't find profile ${name}`} />
 	)
 	return (
 		<>
-			{/* <ProfilBox name={name} /> */}
 			<div className='ProfilPage'>
 				<div className='ProfilPage__image'></div>
 				<p className={'ProfilPage__name'}>

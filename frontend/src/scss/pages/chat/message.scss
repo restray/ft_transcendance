@@ -27,6 +27,8 @@
 		padding: 7px 10px;
 		margin-top: 7px;
 		width: fit-content;
+		max-width: 100%;
+		word-break: break-all;
 	}
 	&__data {
 		display: flex;

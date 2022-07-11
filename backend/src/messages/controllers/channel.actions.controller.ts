@@ -150,10 +150,7 @@ export class ChannelActionController {
     const userChannel = channel.users[0];
 
     if (channel.ownerId == req.user.id)
-      throw new HttpException(
-        'User is the owner of the channel',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new ForbiddenException('User is the owner of the channel');
 
     if (userChannel.state == ChannelUserStatus.MUTE)
       await this.channelService.updateUser(
