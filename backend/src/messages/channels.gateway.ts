@@ -14,7 +14,8 @@ import { AuthSocket, WSAuthMiddleware } from 'src/auth/websocket.middleware';
 import { ChannelsService } from 'src/prisma/channels/channels.service';
 import { UserRequest, UserService } from 'src/prisma/user/user.service';
 import { Server } from 'socket.io';
-import { Channel, ChannelUserStatus } from '@prisma/client';
+import { Channel, ChannelUserStatus, DMChannel } from '@prisma/client';
+import { DmService } from 'src/prisma/dm/dm.service';
 
 @WebSocketGateway({
   namespace: 'channels',
@@ -28,6 +29,7 @@ export class ChannelsGateway implements NestGateway {
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    private readonly dmService: DmService,
   ) {}
 
   @WebSocketServer()
@@ -64,6 +66,40 @@ export class ChannelsGateway implements NestGateway {
       socket.user,
     );
     if (isUserInChannel === false) throw new WsException('User not in channel');
+    if (isUserInChannel.muted) throw new WsException('User muted');
+
+    await this.channelService.addMessage(channel_id, socket.user, message);
+
+    socket.broadcast.to(`channel-${channel_id}`).emit('message', {
+      channel: channel_id,
+      message,
+      user: {
+        id: socket.user.id,
+        name: socket.user.name,
+        avatar: socket.user.avatar,
+      },
+    });
+
+    return 'ok';
+  }
+
+  @SubscribeMessage('dm_message')
+  async handleDMMessage(
+    @MessageBody('user', ParseIntPipe) user_id: number,
+    @MessageBody('message') message: string,
+    @ConnectedSocket() socket: AuthSocket,
+  ) {
+    if (message.length <= 0 || message.length > 2500)
+      throw new WsException('Message too long');
+
+    const isUserInChannel: DMChannel | null = await this.dmService.channel({
+      DMChannelUser: {
+        every: {
+          OR: [{ userId: socket.user.id }, { userId: user_id }],
+        },
+      },
+    });
+    if (!isUserInChannel) throw new WsException('User not in channel');
     if (isUserInChannel.muted) throw new WsException('User muted');
 
     await this.channelService.addMessage(channel_id, socket.user, message);

@@ -47,18 +47,20 @@ enum ChannelMessageType {
 }
 
 model User {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique
-  status         Status           @default(OFFLINE)
-  avatar         String           @default("uploads/default.jpg")
-  otp_secret     String?
-  otp_enable     Boolean          @default(false)
-  intra_id       String           @unique
-  friendRequest  FriendShip[]     @relation("friends_requests")
-  friendProposal FriendShip[]     @relation("friends_proposals")
-  channelsOwner  Channel[]        @relation("channels_owner")
-  channels       ChannelUser[]    @relation("channel_user_user")
-  ChannelMessage ChannelMessage[]
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  status           Status             @default(OFFLINE)
+  avatar           String             @default("uploads/default.jpg")
+  otp_secret       String?
+  otp_enable       Boolean            @default(false)
+  intra_id         String             @unique
+  friendRequest    FriendShip[]       @relation("friends_requests")
+  friendProposal   FriendShip[]       @relation("friends_proposals")
+  channelsOwner    Channel[]          @relation("channels_owner")
+  channels         ChannelUser[]      @relation("channel_user_user")
+  ChannelMessage   ChannelMessage[]
+  DMChannelUser    DMChannelUser[]
+  DMChannelMessage DMChannelMessage[]
 }
 
 model FriendShip {
@@ -111,7 +113,41 @@ model ChannelMessage {
 
   postedAt             DateTime     @default(now())
   updatedAt            DateTime     @default(now()) @updatedAt
-  ChannelUser          ChannelUser? @relation(fields: [channelUserChannelId, channelUserUserId], references: [channelId, userId])
+  ChannelUser          ChannelUser? @relation(fields: [channelUserChannelId, channelUserUserId], references: [channelId, userId], onDelete: SetNull)
   channelUserChannelId Int?
   channelUserUserId    Int?
+}
+
+model DMChannel {
+  id               Int                @id @default(autoincrement())
+  DMChannelUser    DMChannelUser[]
+  DMChannelMessage DMChannelMessage[]
+}
+
+model DMChannelUser {
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  dmChannel        DMChannel          @relation(fields: [DmChannel], references: [id], onDelete: Cascade)
+  DmChannel        Int
+  DMChannelMessage DMChannelMessage[]
+  @@id([userId, DmChannel])
+}
+
+model DMChannelMessage {
+  id Int @id @default(autoincrement())
+
+  content String
+
+  type ChannelMessageType @default(MESSAGE)
+
+  postedAt  DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  User          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  DMChannel     DMChannel     @relation(fields: [DmChannel], references: [id], onDelete: Cascade)
+  DMChannelUser DMChannelUser @relation(fields: [userId, DmChannel], references: [userId, DmChannel], onDelete: Cascade)
+
+  userId    Int
+  DmChannel Int
 }
