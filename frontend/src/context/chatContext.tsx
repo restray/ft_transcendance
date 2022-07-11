@@ -4,7 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import { HEADERS } from '..';
 import fetchWithToken, { checkToken, protectedFetch } from '../lib/fetchImprove';
 import { chatReducer } from '../reducer/ChatReducer';
-import { UserContext, UserContextValue, UserContextValueState } from './userContext';
+import { UserContext, UserContextValue } from './userContext';
 export const ChatContext = createContext<ChatValue | null>(null);
 
 export interface RoomData {
@@ -20,7 +20,11 @@ export interface RoomData {
 export interface User {
 	avatar: string,
 	id: number,
-	name: string
+	name: string,
+	// status: string
+}
+export interface ConnectedUser extends User {
+	otp_enable: boolean
 }
 export interface MessageType {
 
@@ -58,7 +62,7 @@ interface PayloadChatAction extends ChatState {
 	message: MessageType,
 	location: string,
 	id: number,
-	user: UserContextValueState,
+	user: ConnectedUser,
 	direction: boolean
 }
 
@@ -98,11 +102,11 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	});
 	}, [dispatch])
 
-	// const addChannel = useCallback(
-	// (channel: any) => {
-	// 	dispatch({type: "ADD_CHANNEL", payload: {channel}
-	// });
-	// }, [dispatch])
+	const addChannel = useCallback(
+	(channel: any) => {
+		dispatch({type: "ADD_CHANNEL", payload: {channel}
+	});
+	}, [dispatch])
 
 	const removeChannel = useCallback(
 	(id: number) => {
@@ -313,14 +317,15 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	
 	const sendMessage = useCallback(
 	function sendMessageCallback(message: string) {
-		console.log(`send message: ${message}`)
 
 		if (ioChannels && chatValue.rData) {
+			var id: number = chatValue.rData.id
 			ioChannels.emit("message", {
-					channel: chatValue.rData.id,
+					channel: id,
 					message: message
 				}, (response: any) => {
-					console.log(response); // ok
+					if (response === 'ok')
+						addMessage({content: message, User: user}, id)
 				});
 			}
 	}, [ioChannels, chatValue.rData])

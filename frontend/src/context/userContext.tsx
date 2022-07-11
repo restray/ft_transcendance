@@ -1,6 +1,7 @@
 import React, {createContext, useState, useEffect} from 'react';
 import { useSearchParams } from 'react-router-dom';
 import fetchWithToken, { checkToken } from '../lib/fetchImprove';
+import { ConnectedUser } from './chatContext';
 export const UserContext = createContext<UserContextValue | null>(null);
 
 export interface UserContextValueState {
@@ -13,21 +14,24 @@ export interface UserContextValueState {
 
 export interface UserContextValue {
 
-	content: UserContextValueState,
+	content: ConnectedUser,
 	token: string | null,
 	deleteToken: ()=>void,
     login: ()=>void
 }
 
 export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
-    const [state, setState] = useState<UserContextValueState>({name:'',avatar:'', id: 0})
+	const initState: ConnectedUser = {name:'',avatar:'', id: 0, otp_enable: false}
+
+    const [state, setState] = useState<ConnectedUser>(initState)
     const [token, setToken] = useState<string | null>(null)
 	var [searchParams, setSearchParams] = useSearchParams()
 
 	function deleteToken() {
 		setToken(null)
+		setState(initState)
 		localStorage.removeItem('userToken')
-		setState({name:'',avatar:'',id:0})
+		setState({name:'',avatar:'',id:0, otp_enable: false})
 		console.log('deleting')
 	}
 
@@ -38,7 +42,8 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 					setState({
 						name: data.name,
 						avatar: data.avatar,
-						id: data.id
+						id: data.id,
+						otp_enable: data.otp_enable
 					})
 				}}).then(data=>console.log(data))
 		)
