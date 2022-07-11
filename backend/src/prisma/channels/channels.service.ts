@@ -39,6 +39,11 @@ export class ChannelsService {
             },
           },
         },
+        messages: {
+          include: {
+            User: true,
+          },
+        },
       },
     });
   }
