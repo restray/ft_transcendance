@@ -5,6 +5,7 @@ import conf from 'package.json';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { UserfieldsInterceptor } from './prisma/user/userfields.interceptor';
 
 function getConfigApiDoc() {
   return new DocumentBuilder()
@@ -44,6 +45,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.useGlobalInterceptors(new UserfieldsInterceptor());
 
   // Setup the API Documentation for env "local"
   // Accessible on /api
