@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { FriendsModule } from './friends/friends.module';
 import { MessagesModule } from './messages/messages.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { GameModule } from './game/game.module';
 import path from 'path';
 
 @Module({
@@ -20,6 +21,7 @@ import path from 'path';
     }),
     FriendsModule,
     MessagesModule,
+    GameModule,
   ],
   controllers: [],
 })

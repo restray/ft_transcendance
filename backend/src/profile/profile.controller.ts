@@ -8,7 +8,6 @@ import {
   ParseIntPipe,
   Post,
   Req,
-  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -22,18 +21,17 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiProduces,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
-import { createReadStream, unlink } from 'fs';
+import { User } from '@prisma/client';
+import { unlink } from 'fs';
 import multer from 'multer';
 import path from 'path';
 import Jwt2FAGuard from 'src/auth/guards/jwt-2fa.guard';
 import UserPublic from 'src/prisma/user/user.public.interface';
 import { localUploadToURL, UserService } from 'src/prisma/user/user.service';
 import { EditProfileDTO } from './dto/profile.dto';
-import * as mime from 'mime-types';
 
 @Controller('profile')
 @ApiSecurity('access-token')
@@ -157,9 +155,7 @@ export class ProfileController {
     @Req() req,
     @Param('id', ParseIntPipe) id: number,
   ): Promise<any> {
-    /** @todo penser aux bloquages */
-
-    const user = await this.userService.user({
+    const user: User | null = await this.userService.user({
       id,
     });
     if (!user) throw new NotFoundException();
