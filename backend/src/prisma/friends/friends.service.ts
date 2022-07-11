@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FriendShipStatus, User } from '@prisma/client';
+import { FriendShipStatus, Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -84,7 +84,10 @@ export class FriendsService {
     });
   }
 
-  async friendsWith(user1: User, user2: User) {
+  async friendsWith(
+    user1: Prisma.UserWhereUniqueInput,
+    user2: Prisma.UserWhereUniqueInput,
+  ) {
     return this.prismaService.friendShip.findFirst({
       where: {
         OR: [

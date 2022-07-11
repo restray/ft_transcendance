@@ -19,8 +19,7 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
-import { DMChannel, FriendShip, FriendShipStatus, User } from '@prisma/client';
-import { read } from 'fs';
+import { DMChannel, FriendShipStatus, User } from '@prisma/client';
 import Jwt2FAGuard from 'src/auth/guards/jwt-2fa.guard';
 import { DmService } from 'src/prisma/dm/dm.service';
 import { FriendsService } from 'src/prisma/friends/friends.service';
