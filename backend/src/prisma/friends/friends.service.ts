@@ -95,7 +95,7 @@ export class FriendsService {
             AND: [{ requester: user1 }, { receiver: user2 }],
           },
           {
-            AND: [{ requester: user1 }, { receiver: user2 }],
+            AND: [{ requester: user2 }, { receiver: user1 }],
           },
         ],
       },

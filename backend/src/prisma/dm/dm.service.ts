@@ -38,17 +38,17 @@ export class DmService {
     });
   }
 
-  async create(emitter: User, target: User) {
+  async create(emitter: number, target: number) {
     return await this.prisma.dMChannel.create({
       data: {
         DMChannelUser: {
           createMany: {
             data: [
               {
-                userId: emitter.id,
+                userId: emitter,
               },
               {
-                userId: target.id,
+                userId: target,
               },
             ],
           },

@@ -79,6 +79,25 @@ export class ChannelCrudController {
 
   @Get('/:id')
   @ApiOperation({
+    summary: 'Recuperer les informations publique de la Room',
+  })
+  async getChannelInformation(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req,
+  ) {
+    const channel = await this.channelService.channel(id);
+    if (!channel) throw new NotFoundException('Channel not found');
+
+    return {
+      id: channel.id,
+      name: channel.name,
+      type: channel.type,
+      users_count: channel.users.length,
+    };
+  }
+
+  @Get('/:id/messages')
+  @ApiOperation({
     summary: 'Récupérer un channel avec ses messages, ses utilisateurs',
   })
   @ApiParam({

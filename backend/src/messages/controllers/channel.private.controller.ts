@@ -89,6 +89,6 @@ export class ChannelPrivateController {
     });
     if (channel) return channel;
 
-    return await this.dmChannelService.create(req.user, target);
+    return await this.dmChannelService.create(req.user.id, target.id);
   }
 }

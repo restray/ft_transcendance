@@ -58,10 +58,16 @@ export class ChannelsGateway implements NestGateway {
   }
 
   async handleConnection(client: AuthSocket) {
-    const channels = await this.channelService.channelsForUser(client.user);
     client.data.user = client.user;
+
+    const channels = await this.channelService.channelsForUser(client.user);
     channels.forEach((channel) => {
       client.join(`channel-${channel.id}`);
+    });
+
+    const dmChannels = await this.dmService.get(client.user);
+    dmChannels.forEach((channel) => {
+      client.join(`dm-channel-${channel.id}`);
     });
   }
 
@@ -114,14 +120,16 @@ export class ChannelsGateway implements NestGateway {
     if (!friends || friends.status != FriendShipStatus.ACCEPTED)
       throw new WsException('Users are not friends');
 
-    const dmChannel: DMChannel | null = await this.dmService.channel({
+    let dmChannel: DMChannel | null = await this.dmService.channel({
       DMChannelUser: {
         every: {
           OR: [{ userId: socket.user.id }, { userId: user_id }],
         },
       },
     });
-    if (!dmChannel) throw new WsException('User not in channel');
+    if (!dmChannel) {
+      dmChannel = await this.dmService.create(socket.user.id, user_id);
+    }
 
     const sentMessage: DMChannelMessage = await this.dmService.sendMessage(
       dmChannel,
@@ -129,7 +137,7 @@ export class ChannelsGateway implements NestGateway {
       message,
     );
 
-    socket.broadcast.to(`dm-channel-${dmChannel.id}`).emit('message', {
+    socket.broadcast.to(`dm-channel-${dmChannel.id}`).emit('dm_message', {
       ...sentMessage,
       user: {
         id: socket.user.id,
