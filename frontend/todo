@@ -1,1 +1,14 @@
 notif settings
+better connection pages + with 2fa
+settings 2fa part as seperate component
+
+channel add event, 
+chat reducer: 
+	-channel add/delete
+	-message add
+	-user leave/join/promote/demote
+for channel settings: requet to get additional data (all muted and banned and admin players)
+friends context + sockets
+context menu for profiles in chat, and for channels itself ( am i admin? )
+
+verify that mobile version still works well
