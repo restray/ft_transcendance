@@ -14,7 +14,7 @@ export default function ImageUploader({setSelectedImage}: {setSelectedImage: (im
 			<input
 			type="file"
 			onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-				if ( event.target.files && event.target.files.length && event.target.files[0] )
+				if ( event.target.files && event.target.files[0] )
 					setSelectedImage(event.target.files[0]);
 			}}
 			ref={dlRef}

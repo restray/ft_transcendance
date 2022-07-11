@@ -31,7 +31,7 @@ function FriendListFriend({name, pending}: {name: string, pending?: boolean}) {
 		<div className='FriendList__friend' onClick={onClick}>
 			<div className='FriendList__friend__profile'>
 				<div className='FriendList__friend__profile__image' />
-				<NameWithMenu name={name} />
+				{/* <NameWithMenu name={name} /> */}
 			</div>
 			{pending ?
 			<img className='FriendList__friend__chat' src={friendAdd} alt=''/>
@@ -128,7 +128,7 @@ function RoomUsers({rData}: {rData: RoomData}) {
 						</div>
 						{rData.users.map((user: any)=>{
 							if (user.state === 'ADMIN')
-								return <ProfilBox key={user.user.id} name={user.user.name} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
+								// return <ProfilBox key={user.user.id} name={user.user.name} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
 							return null
 						})}
 					</div>
@@ -139,7 +139,7 @@ function RoomUsers({rData}: {rData: RoomData}) {
 						</div>
 						{rData.users.map((user: any)=>{
 							if (user.state === 'USER')
-								return <ProfilBox key={user.user.id} name={user.user.name} cName={'RoomUsers__section__profile'} />
+								// return <ProfilBox key={user.user.id} name={user.user.name} cName={'RoomUsers__section__profile'} />
 							return null
 						})}
 					</div>

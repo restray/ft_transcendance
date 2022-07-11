@@ -17,6 +17,11 @@
 		top: 25px;
 		box-sizing: border-box;
 		border: 5px solid black;
+		overflow: hidden;
+		img {
+			width: 100%;
+			aspect-ratio: 1/1;
+		}
 	}
 	&__name {
 		border-top: 5px solid black;

@@ -1,6 +1,7 @@
 import React, {createContext, useState, useEffect} from 'react';
 import { useSearchParams } from 'react-router-dom';
-import fetchWithToken, { checkToken } from '../lib/fetchImprove';
+import fetchWithToken, { checkToken, protectedFetch, protectedFetchFormData } from '../lib/fetchImprove';
+import { ConnectedUserWithImg } from '../pages/Settings';
 import { ConnectedUser } from './chatContext';
 export const UserContext = createContext<UserContextValue | null>(null);
 
@@ -17,7 +18,8 @@ export interface UserContextValue {
 	content: ConnectedUser,
 	token: string | null,
 	deleteToken: ()=>void,
-    login: ()=>void
+    login: ()=>void,
+	updateProfile: (profile: ConnectedUserWithImg, onSuccess: (data: any)=>void)=>void
 }
 
 export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
@@ -39,9 +41,11 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 		checkToken(token,
 			(token: string)=>fetchWithToken<any>({token, deleteToken, url: `/profile`,
 				callback: (data: any)=>{
+					var image: string = `http://localhost:3000/${data.avatar}`
+					console.log(image)
 					setState({
 						name: data.name,
-						avatar: data.avatar,
+						avatar: image,
 						id: data.id,
 						otp_enable: data.otp_enable
 					})
@@ -80,18 +84,40 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
             })
         }
 		setSearchParams(searchParams)
-		
     }, [])
 
 	function login() {
 		document.location.href="https://api.intra.42.fr/oauth/authorize?client_id=26b634b716649363e01ab4a47f888a4f886a3dbd295b5db57140a068eda483bf&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2F&response_type=code"; 
 	}
 
-    const value: UserContextValue = {
+	async function updateProfile(profile: ConnectedUserWithImg, onSuccess: (data: any)=>void) {
+
+		var formData: FormData = new FormData()
+		formData.append('name', profile.name);
+		if (profile.image)
+			formData.append('avatar', profile.image);
+
+		protectedFetchFormData({
+			token, deleteToken,
+			url: '/profile', method: 'post',
+			formData: formData,
+			onSuccess: (data: Response)=>{
+				if (data.status === 201)
+				{
+					state.name = profile.name
+					setState({...state})
+				}
+				onSuccess(data)
+			}
+		})
+	}
+
+const value: UserContextValue = {
         content: state,
         token: token,
 		deleteToken: deleteToken,
-        login: login
+        login: login,
+		updateProfile
     }
     return (
         <UserContext.Provider value={value}>

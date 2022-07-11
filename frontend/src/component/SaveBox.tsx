@@ -12,3 +12,12 @@ export default function SaveBox({onReset, onSave}: {onReset: ()=>void, onSave: (
 		</div>
 	)
 }
+
+export function ErrorBox() {
+	return (
+		<div className='SaveBox'>
+			<div className='SaveBox--bg SaveBox--bg--error'></div>
+			<p>Error occured!</p>
+		</div>
+	)
+}

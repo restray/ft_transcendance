@@ -2,21 +2,28 @@ import _ from 'lodash'
 import React, {useContext, useEffect, useRef, useState} from 'react'
 import ImageUploader from '../component/ImageUploader'
 import InvisibleInput, { InvisibleInputSelect } from '../component/InvisibleInput'
-import SaveBox from '../component/SaveBox'
+import SaveBox, { ErrorBox } from '../component/SaveBox'
 import { ConnectedUser, User } from '../context/chatContext'
 import { UserContext, UserContextValue } from '../context/userContext'
 
-interface ConnectedUserWithImg extends ConnectedUser {
+export interface ConnectedUserWithImg extends ConnectedUser {
 	image: null | any
 }
 
 export default function Settings() {
 	
-	const {content} = useContext(UserContext) as UserContextValue
+	const {content, updateProfile} = useContext(UserContext) as UserContextValue
 	const [user, setUser] = useState<ConnectedUserWithImg>({name:'',avatar:'',id:0,otp_enable:false,
-	image:''})
+	image:null})
 	const [twoFactors, setTwoFactors] = useState<string>('Disable')
 	const [modified, setModified] = useState<boolean>(false)
+	const [loading, setLoading] = useState<boolean>(true)
+	const [error, setError] = useState<boolean>(false)
+	
+	useEffect(()=>{
+		setLoading(false)
+		reset()
+	}, [content])
 
 	useEffect(()=>{
 		reset()
@@ -24,7 +31,7 @@ export default function Settings() {
 	}, [])
 
 	function reset() {
-		setUser({...content, image: 'https://pierreevl.vercel.app/image/logo.jpg'})
+		setUser({...content, image: null})
 	}
 
 	/* udapters */
@@ -33,7 +40,7 @@ export default function Settings() {
 		setUser({...user})
 	}
 	function resetImage() {
-		user.image = 'https://pierreevl.vercel.app/image/logo.jpg'
+		user.image = null
 		setUser({...user})
 	}
 	function setUserName(name: string) {
@@ -52,21 +59,35 @@ export default function Settings() {
 
 	useEffect(() => {
 
-		if (_.isEqual({...content, image: content.avatar}, user) === false)
+		if (_.isEqual({...content, image: null}, user) === false)
 			setModified(true)
 		else
 			setModified(false)
-
 	}, [user])
+
+	function updateProfileEvent() {
+
+		updateProfile(user, (data: Response)=>{
+			if (data.status !== 201)
+				setError(true)
+			else
+				setError(false)
+			setLoading(false)
+		})
+	}
 
 	return (
 		<div className={'ProfilPage'} style={{'backgroundColor': 'black', color: 'white'}}>
 			<div className={'ProfilPage__title'}>Settings</div>
+			{loading ?
+			<p>loading...</p>
+			:
+			<>
 			<div className='ChannelParameter__image'>
 				<img
 				alt="not fount"
-				src={typeof(user.image) === 'string' ? user.image
-				: URL.createObjectURL(user.image)}
+				src={user.image ? URL.createObjectURL(user.image)
+				: content.avatar}
 				onError={resetImage}
 				/>
 				<ImageUploader setSelectedImage={setImage}/>
@@ -77,7 +98,10 @@ export default function Settings() {
 					'Disable'
 			]} setSelected={setTwoFactorsEvent} selected={twoFactors}/>
 			
-			{modified && <SaveBox onReset={reset} onSave={()=>console.log('send')}/>}
+			{modified && <SaveBox onReset={reset} onSave={updateProfileEvent}/>}
+			{error && <ErrorBox/>}
+			</>
+			}
 		</div>
 	)
 }

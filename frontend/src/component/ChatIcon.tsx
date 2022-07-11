@@ -20,7 +20,7 @@ export default function ChatIcon({ constraintsRef }:
 function ChatIconWrapped({ constraintsRef } :
 { constraintsRef: React.MutableRefObject<null> }) {
 
-    const {content} = useContext(UserContext) as UserContextValue
+    const {content: {id}} = useContext(UserContext) as UserContextValue
     const {content: {state: {open}}, setOpen} = useContext(ChatContext) as ChatValue
 
 	function openChat() {
@@ -31,7 +31,7 @@ function ChatIconWrapped({ constraintsRef } :
 		navigate(`/`)
 	}
 	function goProfile() {
-		navigate(`/profile?name=${content.name}`)
+		navigate(`/profile?userId=${id}`)
 	}
 	function goSettings() {
 		navigate(`/settings`)

@@ -20,6 +20,9 @@
 		left: 0;
 		top: 0;
 		opacity: 0.9;
+		&--error {
+			background-color:rgb(182, 29, 29);
+		}
 	}
 	p {
 		z-index: 2;

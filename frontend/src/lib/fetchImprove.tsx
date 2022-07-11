@@ -76,3 +76,32 @@ export function protectedFetch({onSuccess, onFail, token, deleteToken, url, meth
 	})
 	.catch((err)=>{if(onFail) onFail(err)})
 }
+
+export function protectedFetchFormData({onSuccess, onFail, token, deleteToken, url, method, formData}: {
+	onSuccess?: (res: Response)=>void,
+	onFail?: (err: any)=>void,
+	token: string | null, deleteToken: ()=>void,
+	url: string, method?: string, formData?: FormData
+}) {
+	if (!token)
+		return
+
+	fetch(`http://localhost:3000${url}`, {
+		method: method,
+		headers: {
+			'Accept': 'application/json',
+			'Access-Control-Allow-Origin': '*',
+			"Content-Type": "application/x-www-form-urlencoded",
+			'Authorization': `Bearer ${token}`
+		},
+		body: formData
+	})
+	.then((res)=>{
+		if (res.status === 401) {
+			deleteToken()
+			return
+		}
+		if (onSuccess) onSuccess(res)
+	})
+	.catch((err)=>{if(onFail) onFail(err)})
+}

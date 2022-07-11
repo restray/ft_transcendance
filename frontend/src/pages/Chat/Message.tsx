@@ -16,7 +16,7 @@ function Message({ content, user, direction='left' }: { content: string, user: s
 				<div className='Message__data'>
 					<p className='Message__name Message__right__name'>
 						<span className='Message__date Message__right__date'>11:52</span>
-						<NameWithMenu name={user} />
+						{/* <NameWithMenu name={user} /> */}
 					</p>
 					<div className='Message__content Message__right__content'>{content}</div>
 				</div>
@@ -29,7 +29,7 @@ function Message({ content, user, direction='left' }: { content: string, user: s
 			<div className='Message__image Message__left__image'></div>
 			<div className='Message__data'>
 				<p className='Message__name'>
-					<NameWithMenu name={user} />
+					{/* <NameWithMenu name={user} /> */}
 					<span className='Message__date Message__left__date'>11:52</span>
 				</p>
 				<div className='Message__content Message__left__content'>{content}</div>
@@ -42,7 +42,7 @@ function MessageSystem({user, content}: {user: string, content: string}) {
 
 	return (
 		<div className='MessageSystem'>
-			<NameWithMenu name={user} />
+			{/* <NameWithMenu name={user} /> */}
 			<span style={{whiteSpace: 'pre'}}>{` ${content}`}</span>
 		</div>
 	)
