@@ -14,7 +14,12 @@ import { AuthSocket, WSAuthMiddleware } from 'src/auth/websocket.middleware';
 import { ChannelsService } from 'src/prisma/channels/channels.service';
 import { UserRequest, UserService } from 'src/prisma/user/user.service';
 import { Server } from 'socket.io';
-import { Channel, ChannelUserStatus, DMChannel } from '@prisma/client';
+import {
+  Channel,
+  ChannelUserStatus,
+  DMChannel,
+  DMChannelMessage,
+} from '@prisma/client';
 import { DmService } from 'src/prisma/dm/dm.service';
 
 @WebSocketGateway({
@@ -92,21 +97,23 @@ export class ChannelsGateway implements NestGateway {
     if (message.length <= 0 || message.length > 2500)
       throw new WsException('Message too long');
 
-    const isUserInChannel: DMChannel | null = await this.dmService.channel({
+    const dmChannel: DMChannel | null = await this.dmService.channel({
       DMChannelUser: {
         every: {
           OR: [{ userId: socket.user.id }, { userId: user_id }],
         },
       },
     });
-    if (!isUserInChannel) throw new WsException('User not in channel');
-    if (isUserInChannel.muted) throw new WsException('User muted');
+    if (!dmChannel) throw new WsException('User not in channel');
 
-    await this.channelService.addMessage(channel_id, socket.user, message);
-
-    socket.broadcast.to(`channel-${channel_id}`).emit('message', {
-      channel: channel_id,
+    const sentMessage: DMChannelMessage = await this.dmService.sendMessage(
+      dmChannel,
+      socket.user,
       message,
+    );
+
+    socket.broadcast.to(`dm-channel-${dmChannel.id}`).emit('message', {
+      ...sentMessage,
       user: {
         id: socket.user.id,
         name: socket.user.name,

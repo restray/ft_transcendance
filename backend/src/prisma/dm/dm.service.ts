@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, PrismaClient, User } from '@prisma/client';
-import { emit } from 'process';
+import { DMChannel, Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -54,6 +53,19 @@ export class DmService {
             ],
           },
         },
+      },
+    });
+  }
+
+  async sendMessage(channel: DMChannel, emitter: User, content: string) {
+    return await this.prisma.dMChannelMessage.create({
+      data: {
+        content,
+        DmChannel: channel.id,
+        userId: emitter.id,
+      },
+      include: {
+        DMChannel: true,
       },
     });
   }

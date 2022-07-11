@@ -90,8 +90,6 @@ export class ChannelPrivateController {
     });
     if (channel) return channel;
 
-    await this.gateway.userJoinChannel();
-
     return await this.dmChannelService.create(req.user, target);
   }
 }
