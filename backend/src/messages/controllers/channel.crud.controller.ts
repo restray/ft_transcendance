@@ -137,6 +137,9 @@ export class ChannelCrudController {
   }
 
   @Put('/:id')
+  @ApiOperation({
+    summary: "Modifier le channel. L'utilisateur doit etre admin.",
+  })
   @ApiParam({
     name: 'id',
     required: true,
@@ -144,10 +147,10 @@ export class ChannelCrudController {
     description: 'ID du channel à récupérer',
   })
   @ApiOkResponse({
-    description: 'Channel supprimé',
+    description: 'Channel modifie',
   })
   @ApiForbiddenResponse({
-    description: "L'utilisateur doit être le owner du channel",
+    description: "L'utilisateur doit être admin du channel",
   })
   @ApiNotFoundResponse({
     description: 'Channel inexistant',
