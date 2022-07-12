@@ -91,18 +91,23 @@ export default function AllChannel() {
 		e.stopPropagation()
 		setCreateModal(true)
 	}
-	// {
-	// 	"name": "Nom de channel",
-	// 	"type": "PUBLIC",
-	// 	"password": "string"
-	// }
+
+	const [error, setError] = useState<string | null>(null)
+	const [loading, setLoading] = useState<boolean>(false)
 	function onClickCreateChannel() {
-		createChannel(()=>setCreateModal(false))
+		setLoading(true)
+		createChannel((data: Response)=>{
+			if (data.status !== 201)
+				setError(data.statusText)
+			else
+				setCreateModal(false)
+			setLoading(false)
+		})
 	}
 	return (
 		<div className='Chat__channels--container' onClick={hide}>
 			<CreateServerModal modal={createModal} setModal={setCreateModal} onCreate={onClickCreateChannel}
-			message={"Do you want to create a new room?"} title={'New Room'} />
+			message={"Do you want to create a new room?"} title={'New Room'} isLoading={loading} error={error}/>
 
 			<div className='Chat__channels' onClick={hide}>
 				{windowDimensions.width <= 700 &&

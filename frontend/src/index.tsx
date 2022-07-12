@@ -22,13 +22,14 @@ root.render(
 		<RightClickMenuProvider>
 			<UserContextProvider>
 				<ChatProvider>
-				<React.StrictMode>
+				{/* <React.StrictMode> */}
+				<>
 					<App />
 					<RightClickMenu />
-				</React.StrictMode>
+				</>
+				{/* </React.StrictMode> */}
 				</ChatProvider>
 			</UserContextProvider>
 		</RightClickMenuProvider>
 	</BrowserRouter>
-
 );

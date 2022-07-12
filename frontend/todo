@@ -7,7 +7,7 @@ chat reducer:
 	-channel add/delete
 	-message add
 	-user leave/join/promote/demote
-for channel settings: requet to get additional data (all muted and banned and admin players)
+for channel settings: requet to get additional data (all muted and banned and admin playersgi)
 friends context + sockets
 context menu for profiles in chat, and for channels itself ( am i admin? )
 
