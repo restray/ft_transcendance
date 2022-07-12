@@ -1,3 +1,4 @@
+import { max, random } from 'lodash';
 import React, { useEffect } from 'react'
 
 interface gameData {
@@ -12,15 +13,11 @@ interface gameData {
 	scorePlayerOne : number,
 	scorePlayerTwo : number,
 	gameUnit : number,
-	reset : boolean
+	reset : boolean,
+	elem : HTMLElement | null,
+	root : HTMLElement | null
 }
 
-function compareInterval( IntValOne: number, IntValTwo: number, IntCmpValOne: number, IntCmpValTwo: number ) {
-
-	if (IntValOne <= IntCmpValTwo && IntValTwo > IntCmpValOne)
-		return true;
-	return false;
-}
 
 function player( gameId: string, gameData: gameData, side: string ) {
 
@@ -31,18 +28,18 @@ function player( gameId: string, gameData: gameData, side: string ) {
 	var incr = (incr : number) => {
 		if (side === "left") {
 			gameData.playerOneY += incr;
-			gameData.playerOneY = gameData.playerOneY < 0 ? 0 : gameData.playerOneY;
-			gameData.playerOneY = gameData.playerOneY > gameData.gameUnit ? gameData.gameUnit : gameData.playerOneY;
+			gameData.playerOneY = gameData.playerOneY < 1000 ? 1000 : gameData.playerOneY;
+			gameData.playerOneY = gameData.playerOneY > gameData.gameUnit - 1000 ? gameData.gameUnit - 1000 : gameData.playerOneY;
 		}
 		else {
 			gameData.playerTwoY += incr;
-			gameData.playerTwoY = gameData.playerTwoY < 0 ? 0 : gameData.playerTwoY;
-			gameData.playerTwoY = gameData.playerTwoY > gameData.gameUnit ? gameData.gameUnit : gameData.playerTwoY;
+			gameData.playerTwoY = gameData.playerTwoY < 1000 ? 1000 : gameData.playerTwoY;
+			gameData.playerTwoY = gameData.playerTwoY > gameData.gameUnit - 1000 ? gameData.gameUnit - 1000 : gameData.playerTwoY;
 		}
 	}
 	var keycode : number = -1;
 	var speed : number = 0;
-	const maxSpeed : number = 100;
+	const maxSpeed : number = 80;
 	const friction : number = 4;
 
 	function createElem() {
@@ -59,15 +56,15 @@ function player( gameId: string, gameData: gameData, side: string ) {
 	}
 	var player = createElem();
 
-	var elem = document.getElementById(gameId);
-	var root = document.getElementById('root');
-	if (!elem || !root)
+	// var elem = document.getElementById(gameId);
+	// var root = document.getElementById('root');
+	if (!gameData.elem || !gameData.root)
 		return;
 
-	elem.appendChild(player);
+	gameData.elem.appendChild(player);
 	if (side === "left")
 	{
-		root.addEventListener('keydown', (event) => {
+		gameData.root.addEventListener('keydown', (event) => {
 			if (event.keyCode !== 68 && event.keyCode !== 65)
 				return;
 			keycode = event.keyCode;
@@ -75,13 +72,13 @@ function player( gameId: string, gameData: gameData, side: string ) {
 	}
 	else
 	{
-		root.addEventListener('keydown', (event) => {
+		gameData.root.addEventListener('keydown', (event) => {
 			if (event.keyCode !== 37 && event.keyCode !== 39)
 				return;
 			keycode = event.keyCode;
 		});
 	}
-	root.addEventListener('keyup', (event) => {
+	gameData.root.addEventListener('keyup', (event) => {
 		if (keycode === event.keyCode)
 		{
 			keycode = -1;
@@ -127,47 +124,25 @@ function ball( gameId: string, gameData: gameData ) {
 	function getRealY( y: number ) : number {
 		return y * gameData.height / gameData.gameUnit;
 	}
-	function getRealYplayer( y: number ) : number {
-		return y * (gameData.height - gameData.playerHeight) / gameData.gameUnit;
-	}
 	function getRealX( x: number ) : number {
 		return x * (gameData.width / 2) / gameData.gameUnit;
 	}
-	var incrY = (incr : number) => {
-		y += incr;
-		y = y < 0 ? 0 : y;
-		y = y > gameData.gameUnit - 200 ? gameData.gameUnit - 200 : y;
-	}
-	var dcrY = (dcr : number) => {
-		y -= dcr;
-		y = y < 0 ? 0 : y;
-		y = y > gameData.gameUnit - 200 ? gameData.gameUnit - 200 : y;
-	}
-	var incrX = (incrx : number) => {
-		x += incrx;
-		x = x < 0 ? 0 : x;
-		x = x > gameData.gameUnit * 2 - 200 ? gameData.gameUnit * 2 - 200 : x;
-	}
-	var dcrX = (dcrx : number) => {
-		x -= dcrx;
-		x = x < 0 ? 0 : x;
-		x = x > gameData.gameUnit * 2  - 200 ? gameData.gameUnit * 2 - 200 : x;
+	function getRealYplayer( y: number ) : number {
+		return y * (gameData.height - gameData.playerHeight) / gameData.gameUnit;
 	}
 	var x : number = gameData.gameUnit;
 	var y : number = gameData.gameUnit / 2;
+	var speedX : number = 50;
+	var speedY : number = -5;
 	var keycode : number = -1;
-	var speed : number = 50;
-	const maxSpeed : number = 100;
-	const friction : number = 4;
+	const maxSpeed : number = 180;
 
 	var start : boolean = false;
-	var updwn : boolean = false;
-	var lr : boolean = false; 
 
 	function createBall() {
 		var createBall = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 
-		createBall.setAttribute('cy', `${gameData.width / 4}`);
+		createBall.setAttribute('cy', `${gameData.height / 2}`);
 		createBall.setAttribute('cx', `${gameData.width / 2 }`);
 		createBall.setAttribute('r', `8`);
 		createBall.setAttribute('fill', `black`);
@@ -194,112 +169,101 @@ function ball( gameId: string, gameData: gameData ) {
 	var ball = createBall();
 	var scoreLeft = createScore("left");
 	var scoreRight = createScore("right");
-	var elem = document.getElementById(gameId);
-	var root = document.getElementById('root');
-	if (!elem || !root)
+	// var elem = document.getElementById(gameId);
+	// var root = document.getElementById('root');
+	if (!gameData.elem || !gameData.root)
 		return;
 
-	elem.appendChild(ball);
-	elem.appendChild(scoreLeft);
-	elem.appendChild(scoreRight);
-	root.addEventListener('keydown', (event) => {
-		if (event.keyCode !== 68 && event.keyCode !== 65 && event.keyCode !== 37 && event.keyCode !== 39)
+	gameData.elem.appendChild(ball);
+	gameData.elem.appendChild(scoreLeft);
+	gameData.elem.appendChild(scoreRight);
+	gameData.root.addEventListener('keydown', (event) => {
+		if (event.keyCode !== 32)
 			return;
 		keycode = event.keyCode;
 	},);
-	root.addEventListener('keyup', (event) => {
+	gameData.root.addEventListener('keyup', (event) => {
 		if (keycode === event.keyCode)
 		{
 			keycode = -1;
 		}
 	},);
-	
+
 	setInterval( () => {
-		if (keycode === 68 || keycode === 65 || keycode === 39 || keycode === 37)
+		if (keycode === 32)
 		{
 			start = true;
 			gameData.reset = false;
 		}
+
 		if (start === true)
 		{
-			console.log(getRealYplayer(gameData.playerTwoY));
-			console.log(getRealYplayer(gameData.playerOneY));
-			if (updwn === false)
-			{
-				incrY(speed);
-				if (getRealY(y) + Number(ball.getAttribute("r")) === getRealYplayer(gameData.playerOneY)
-				&& compareInterval(getRealX(x) - Number(ball.getAttribute("r")), getRealX(x) + Number(ball.getAttribute("r")), 
-				gameData.widthUnit*5, gameData.widthUnit*5 + gameData.playerWidth))
-					updwn = true;
-				if (getRealY(y) + Number(ball.getAttribute("r")) === getRealYplayer(gameData.playerTwoY)
-				&& compareInterval(getRealX(x) - Number(ball.getAttribute("r")), getRealX(x) + Number(ball.getAttribute("r")), 
-				gameData.width - gameData.widthUnit*5 - gameData.playerWidth, gameData.width - gameData.widthUnit*5))
-					updwn = true;
-					//Lower Boundary
-					if (getRealY(y) === gameData.height - Number(ball.getAttribute("r"))) {
-						updwn = true;
-						// speed += 10;
-						// console.log();
-					}
-				}
-			console.log(getRealY(y));
-			if (updwn === true)
-			{
-				dcrY(speed);
-				//PlayerOne
-				if (getRealY(y) - Number(ball.getAttribute("r")) === getRealYplayer(gameData.playerOneY) + gameData.playerHeight
-				&& compareInterval(getRealX(x) - Number(ball.getAttribute("r")), getRealX(x) + Number(ball.getAttribute("r")), 
-				gameData.widthUnit*5, gameData.widthUnit*5 + gameData.playerWidth))
-					updwn = false; 
-				//PlayerTwo
-				if (getRealY(y) - Number(ball.getAttribute("r")) === getRealYplayer(gameData.playerTwoY) + gameData.playerHeight
-				&& compareInterval(getRealX(x) - Number(ball.getAttribute("r")), getRealX(x) + Number(ball.getAttribute("r")), 
-				gameData.width - gameData.widthUnit*5 - gameData.playerWidth, gameData.width - gameData.widthUnit*5))
-					updwn = false;
-				//Upper Boundary
-				if (getRealY(y) === Number(ball.getAttribute("r"))) {
-					updwn = false;
-					// speed += 10;
-				}
+			//Upper and Lower Boundary
+			if (getRealY(y) > gameData.height - Number(ball.getAttribute("r")) || getRealY(y) < Number(ball.getAttribute("r"))) {
+				speedY *= -1;
 			}
-			if (lr === false)
-			{
-				incrX(speed);
-				if ((gameData.width - gameData.widthUnit*5 - gameData.playerWidth - Number(ball.getAttribute("r")) / 2 === getRealX(x)
-				&& compareInterval(getRealY(y) - Number(ball.getAttribute("r")), getRealY(y) + Number(ball.getAttribute("r")),getRealYplayer(gameData.playerTwoY), getRealYplayer(gameData.playerTwoY) + gameData.playerHeight)))
-					lr = true;
-				if (getRealX(x) === gameData.width - Number(ball.getAttribute("r")))
-				{
-					//Right Goal
-					start = false;
-					if (gameData.reset !== true)
-						gameData.scorePlayerOne++;
-					gameData.reset = true;
-					ball.style.transform = `initial`;
-					x = gameData.gameUnit;
-					y = gameData.gameUnit / 2;
-					lr = true;
-				}
+			//Player One
+			if (getRealY(y) + Number(ball.getAttribute("r")) > getRealYplayer(gameData.playerOneY) && 
+			getRealY(y) - Number(ball.getAttribute("r")) < getRealYplayer(gameData.playerOneY) + gameData.playerHeight
+			&& getRealX(x) - Number(ball.getAttribute("r")) < gameData.widthUnit*5 + gameData.playerWidth
+			&& getRealX(x) + Number(ball.getAttribute("r")) > gameData.widthUnit*5) {
+				speedX *= -1.2;
+				if (getRealY(y) + Number(ball.getAttribute("r")) > getRealYplayer(gameData.playerOneY) + 50 && 
+				getRealY(y) - Number(ball.getAttribute("r")) < getRealYplayer(gameData.playerOneY) + gameData.playerHeight - 50)
+					speedY *= -1.2;
+				else if (getRealY(y)  <= getRealYplayer(gameData.playerOneY) + 50)
+					speedY = -Math.abs(speedX);
+				else if (getRealY(y)  >= getRealYplayer(gameData.playerOneY) + gameData.playerHeight - 50)
+					speedY = Math.abs(speedX);
 			}
-			if (lr === true)
+			
+			//Player Two
+			if (getRealY(y) + Number(ball.getAttribute("r")) > getRealYplayer(gameData.playerTwoY) && 
+			getRealY(y) - Number(ball.getAttribute("r")) < getRealYplayer(gameData.playerTwoY) + gameData.playerHeight
+			&& getRealX(x) + Number(ball.getAttribute("r")) > gameData.width - gameData.widthUnit*5 - gameData.playerWidth
+			&& getRealX(x) - Number(ball.getAttribute("r")) < gameData.width - gameData.widthUnit*5) {
+				speedX *= -1.2;
+				if (getRealY(y) + Number(ball.getAttribute("r")) > getRealYplayer(gameData.playerTwoY) + 50 && 
+				getRealY(y) - Number(ball.getAttribute("r")) < getRealYplayer(gameData.playerTwoY) + gameData.playerHeight - 50)
+					speedY *= -1.2;
+				else if (getRealY(y) - Number(ball.getAttribute("r")) >= getRealYplayer(gameData.playerTwoY) + gameData.playerHeight - 50)
+					speedY = Math.abs(speedX); // lower segment of the paddle
+				else if (getRealY(y) + Number(ball.getAttribute("r")) <= getRealYplayer(gameData.playerTwoY) + 50)
+					speedY = -Math.abs(speedX); // upper segment of the paddle
+			}
+		
+			speedX = speedX > maxSpeed ? maxSpeed : speedX;
+			speedX = speedX < -maxSpeed ? -maxSpeed : speedX;
+			speedY = speedY > maxSpeed ? maxSpeed : speedY;
+			speedY = speedY < -maxSpeed ? -maxSpeed : speedY;
+
+			y += Math.floor(speedY);
+			x += Math.floor(speedX);
+			//Right Goal
+			if (getRealX(x) + Number(ball.getAttribute("r")) >= gameData.width)
 			{
-				dcrX(speed);
-				if ((gameData.widthUnit*5 + gameData.playerWidth + Number(ball.getAttribute("r")) === getRealX(x) 
-				&& compareInterval(getRealY(y) - Number(ball.getAttribute("r")), getRealY(y) + Number(ball.getAttribute("r")), 
-				getRealYplayer(gameData.playerOneY), getRealYplayer(gameData.playerOneY) + gameData.playerHeight)))
-					lr = false;
-				if (getRealX(x) <= Number(ball.getAttribute("r")))
-				{
-					//left Goal
-					start = false;
-					if (gameData.reset !== true)
-						gameData.scorePlayerTwo++;
-					gameData.reset = true;
-					ball.style.transform = `initial`;
-					x = gameData.gameUnit;
-					y = gameData.gameUnit / 2;
-					lr = false;
-				}
+				start = false;
+				if (gameData.reset !== true)
+					gameData.scorePlayerOne++;
+				gameData.reset = true;
+				ball.style.transform = `initial`;
+				x = gameData.gameUnit;
+				y = gameData.gameUnit / 2;
+				speedX = 50;
+				speedY = -5;
+			}
+			//left Goal
+			if (getRealX(x) <= Number(ball.getAttribute("r")))
+			{
+				start = false;
+				if (gameData.reset !== true)
+					gameData.scorePlayerTwo++;
+				gameData.reset = true;
+				ball.style.transform = `initial`;
+				x = gameData.gameUnit;
+				y = gameData.gameUnit / 2;
+				speedX = 50;
+				speedY = -5;
 			}
 			if (start === true)
 				ball.style.transform = `translate(${getRealX(x) - 400}px, ${getRealY(y) - 200}px)`;
@@ -332,13 +296,19 @@ export default function Game() {
 		playerTwoY: 10000 / 2,
 		scorePlayerOne: 0,
 		scorePlayerTwo: 0,
-		reset: false
+		reset: false,
+		elem : document.getElementById(gameId),
+		root : document.getElementById(`root`)
+
 	}
+	// console.log(gameData.playerHeight);
+
 
 	useEffect(() => {
-		ball( gameId, gameData );
+		// console.log("hsello");
+		player( gameId, gameData, "left" );
 		player( gameId, gameData, "right" );
-		player( gameId, gameData,"left" );
+		ball( gameId, gameData );
 		// player1( gameId, gameData );
 	})
 	
