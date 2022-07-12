@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class EditProfileDTO {
@@ -8,8 +9,8 @@ export class EditProfileDTO {
     description: "Nouveau nom de l'uilisateur",
     example: 'pleveque',
   })
+  @MinLength(3)
   @MaxLength(50)
-  @MinLength(10)
   name: string;
 
   @ApiPropertyOptional({
@@ -25,5 +26,6 @@ export class EditProfileDTO {
     description: "Etat du 2FA pour l'utilisateur",
     example: 'false',
   })
+  @Transform(({ value }) => value === 'true')
   otp_enabled: boolean;
 }

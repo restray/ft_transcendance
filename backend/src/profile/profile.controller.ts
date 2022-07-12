@@ -57,11 +57,6 @@ export class ProfileController {
   }
 
   @Post()
-  @UsePipes(
-    new ValidationPipe({
-      transform: true,
-    }),
-  )
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: "Editer les informations de l'utilisateur connecté",
@@ -127,10 +122,14 @@ export class ProfileController {
     }
 
     if (newImage == req.user.avatar && newPseudo == req.user.name)
-      throw new BadRequestException();
+      throw new BadRequestException({ name: 'No field are modified' });
 
-    if (!updateDto.otp_enabled) req.user.otp_enabled = false;
-    else throw new BadRequestException("Can't define 2FA in this part.");
+    if (req.user.otp_enabled) {
+      if (!updateDto.otp_enabled) req.user.otp_enabled = false;
+    } else {
+      if (updateDto.otp_enabled)
+        throw new BadRequestException("Can't define 2FA in this part.");
+    }
 
     req.user.name = newPseudo;
     req.user.avatar = newImage;
