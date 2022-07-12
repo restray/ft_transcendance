@@ -9,14 +9,16 @@ import { UserContext, UserContextValue } from './userContext';
 export const ChatContext = createContext<ChatValue | null>(null);
 
 export interface RoomData {
-
 	id: number,
 	name: string,
 	messages: MessageType[],
 	ownerId: number,
-	password: null | string,
 	type: string,
-	users: []
+	users: RoomUser[]
+}
+export interface RoomUser {
+	state: string,
+	user: User
 }
 export interface User {
 	avatar: string,
@@ -47,7 +49,7 @@ export interface ChatState {
 export interface ChatValue {
 
 	content: ChatState,
-	createChannel: (a: ()=>void)=>void,
+	createChannel: (a: (a:Response)=>void)=>void,
 	loaded: Map<string, boolean>,
 	sendMessage: (message: string)=>void,
 	setLocation: (location: string, id?: number | undefined)=>void,
@@ -105,7 +107,7 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	}, [dispatch])
 
 	const addChannel = useCallback(
-	(channel: any) => {
+	(channel: RoomData) => {
 		dispatch({type: "ADD_CHANNEL", payload: {channel}
 	});
 	}, [dispatch])
@@ -121,11 +123,6 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	});
 	}, [dispatch])
 
-	// const setRoomData = useCallback(
-	// (roomId: number | null) => {
-	// 	dispatch({type: "SET_ROOM_DATA", payload: {roomId}
-	// });
-	// }, [dispatch])
 	const setLocation = useCallback(
 		(location: string, id?: number | undefined) => {
 			dispatch({type: "SET_LOCATION", payload: {location, id, user}
@@ -149,24 +146,6 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 			}})
 		)
 	}, [token, setFriends, loaded, deleteToken])
-
-	// const setLoadedChannels = useCallback(
-	// 	async function setLoadedChannelsCallback(data: any) {
-
-
-	// 		if (!token)
-	// 			return
-	
-	// 		var loadedChannels: RoomData[] = []
-	// 		for (var room of data) {
-	// 			var rData = await fetchWithToken<RoomData>({token, deleteToken, url: `/channels/${room.id}?start=0&count=5`})
-	// 			loadedChannels.push(rData.data)
-	// 		}
-	// 		setChannels(loadedChannels)
-	// 		loaded.set('channels', true)
-	// 	},
-	// 	[token, setChannels, loaded, deleteToken]
-	// )
 	
 	useEffect(()=>{
 		
@@ -176,6 +155,7 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		 	deleteToken,
 			url: `/channels`, 
 			callback: (data: any)=>{
+				console.log(data)
 				setChannels(data)
 				loaded.set('channels', true)
 			}
@@ -194,19 +174,28 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 
 	/* events */
 	const createChannel = useCallback(
-		function createChannelCallback(callback: ()=>void) {
+		function createChannelCallback(callback: (data: Response)=>void) {
 			console.log('hey creating channel, please wait...')
+			var name = 'nice room'
+			var type = 'PUBLIC'
+			var password = ''
 			protectedFetch({
 				token, deleteToken,
 				url: `/channels`, method: 'POST',
-				body: {
-					name: 'super channel!',
-					type: 'PUBLIC',
-					password: ''
-				},
+				body: {name, type, password},
 				onSuccess: (res: Response)=>{
-					res.json().then(res=>console.log(res))
-					callback()
+					res.json().then(data=>{
+						var nRoom: RoomData = {
+							id: data.id,
+							name: name,
+							type: type,
+							messages: [],
+							ownerId: user.id,
+							users: [{state: 'ADMIN',user: user}]
+						}
+						addChannel(nRoom)
+						callback(res)
+					})
 				}
 			})
 		}
