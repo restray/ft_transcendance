@@ -97,11 +97,11 @@ export class GameRoom {
     };
   }
 
-  getGame(): GameInformation {
+  public getGame(): GameInformation {
     return this.game;
   }
 
-  addUser(socket: AuthSocket): UserType {
+  private addUser(socket: AuthSocket): UserType {
     if (this.game.players.right == null) {
       this.game.players.right = {
         connected: socket,
@@ -117,17 +117,21 @@ export class GameRoom {
     return 'spectator';
   }
 
-  userConnect(socket: AuthSocket) {
+  public userConnect(socket: AuthSocket) {
     socket.join(this.id);
     const side = this.isUserInMatch(socket.user);
     if (!side) {
       const type = this.addUser(socket);
 
-      socket.emit('join', {
+      const infos = {
         type,
         side: type == 'player' ? 'right' : null,
         game: this.game,
-      });
+      };
+
+      socket.emit('join', infos);
+
+      return infos;
     } else {
       this.game.players[side].ready = false;
       this.game.players[side].connected = socket;
@@ -140,7 +144,13 @@ export class GameRoom {
     }
   }
 
-  userDisconnect(socket: AuthSocket) {
+  /**
+   * When an user is disconnected, we pause the game where it played
+   * @param socket AuthSocket
+   *
+   * @todo Remove game when both users are logouts
+   */
+  public userDisconnect(socket: AuthSocket) {
     socket.leave(this.id);
     const side = this.isUserInMatch(socket.user);
     if (!side) {
@@ -153,12 +163,12 @@ export class GameRoom {
     }
   }
 
-  canPlayerJoin(): boolean {
+  public canPlayerJoin(): boolean {
     if (this.is_private) return false;
     return this.game.players.right.connected == null;
   }
 
-  isUserInMatch(user: User): PlayerSide | null {
+  public isUserInMatch(user: User): PlayerSide | null {
     if (user.id == this.game.players.left.connected.user.id) return 'left';
     if (user.id == this.game.players.right.connected.user.id) return 'right';
     return null;

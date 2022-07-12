@@ -99,8 +99,7 @@ export class GameGateway implements NestGateway {
       const joinableGames = this.games.filter((game) => game.canPlayerJoin());
       if (joinableGames.length > 0) {
         const joinedGame = joinableGames[0];
-        joinedGame.addUser(client);
-        return joinedGame;
+        return joinedGame.userConnect(client);
       }
     }
 
@@ -122,9 +121,6 @@ export class GameGateway implements NestGateway {
     if (game.length <= 0) throw new WsException('No game found with this id.');
 
     game = game[0];
-    return {
-      type: game.addUser(client),
-      game: game,
-    };
+    return game.userConnect(client);
   }
 }
