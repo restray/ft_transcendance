@@ -4,7 +4,7 @@ import { FriendsService } from 'src/prisma/friends/friends.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/prisma/user/user.service';
 import { FriendsController } from './friends.controller';
-import { StatusGateway } from './status.gateway';
+import { FriendsGateway } from './friends.gateway';
 
 @Module({
   providers: [
@@ -12,8 +12,7 @@ import { StatusGateway } from './status.gateway';
     FriendsService,
     JwtService,
     UserService,
-    StatusGateway,
-    StatusGateway,
+    FriendsGateway,
   ],
   controllers: [FriendsController],
 })

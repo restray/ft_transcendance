@@ -21,7 +21,7 @@ import { ParseEnumPipe } from '@nestjs/common';
     origin: true,
   },
 })
-export class StatusGateway implements NestGateway {
+export class FriendsGateway implements NestGateway {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,

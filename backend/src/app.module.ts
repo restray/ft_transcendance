@@ -4,6 +4,7 @@ import { ProfileModule } from './profile/profile.module';
 import { ConfigModule } from '@nestjs/config';
 import { FriendsModule } from './friends/friends.module';
 import { MessagesModule } from './messages/messages.module';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { MessagesModule } from './messages/messages.module';
     }),
     FriendsModule,
     MessagesModule,
+    GameModule,
   ],
   controllers: [],
 })
