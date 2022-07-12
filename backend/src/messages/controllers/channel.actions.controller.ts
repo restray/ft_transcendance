@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -23,7 +24,6 @@ import {
   ApiParam,
   ApiSecurity,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ChannelType, ChannelUserStatus } from '@prisma/client';
 import { verify } from 'argon2';
@@ -63,7 +63,7 @@ export class ChannelActionController {
     description:
       "L'utilisateur doit saisir un mot de passe pour rejoindre ce canal",
   })
-  @ApiUnauthorizedResponse({
+  @ApiForbiddenResponse({
     description: "L'utilisateur n'a pas été invité à rejoindre ce canal",
   })
   async joinChannel(
@@ -72,8 +72,8 @@ export class ChannelActionController {
     @Body() password_ch: ChannelPasswordDTO,
   ) {
     const channel = await this.channelService.channel(id);
-    if (!channel)
-      throw new HttpException('Channel not found', HttpStatus.NOT_FOUND);
+    if (!channel) throw new NotFoundException('Channel not found');
+
     const isUserInChannel = channel.users.filter(
       (u) => u.user.id == req.user.id,
     );
@@ -83,10 +83,7 @@ export class ChannelActionController {
       switch (userChannel.state) {
         case ChannelUserStatus.BAN:
           if (userChannel.until >= new Date())
-            throw new HttpException(
-              'User was banned from this channel.',
-              HttpStatus.UNAUTHORIZED,
-            );
+            throw new ForbiddenException('User was banned from this channel.');
           else await this.channelService.removeUser(channel, req.user);
           break;
 
@@ -105,14 +102,11 @@ export class ChannelActionController {
     }
 
     if (channel.type == ChannelType.PRIVATE)
-      throw new HttpException(
-        'User is not invited to this channel.',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new ForbiddenException('User is not invited to this channel.');
 
     if (channel.type == ChannelType.PROTECTED) {
       if (!(await verify(channel.password, password_ch.password)))
-        throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
+        throw new BadRequestException('Invalid password');
     }
 
     await this.channelService.addUser(channel, req.user);
