@@ -2,12 +2,7 @@ import { ChatAction, ChatState, RoomData } from "../context/chatContext"
 
 export const chatReducer = (state: ChatState , action: ChatAction ) => {
 	const {location, id, user} = action.payload
-    if (action.type === 'SET_FRIENDS') {
-		if (action.payload.friends)
-        	state.friends = action.payload.friends
-		return {...state}
-    }
-	else if (action.type === 'SET_CHANNELS') {
+	if (action.type === 'SET_CHANNELS') {
 		if (action.payload.channels)
 			state.channels = action.payload.channels
 		return {...state}
@@ -36,12 +31,6 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 		}
 		return {...state}
 	}
-	// else if (action.type === 'SET_ROOM_DATA') {
-	// 	if ( action.payload.roomId )
-	// 		return {...setRoomData(state, action.payload.roomId)}
-	// 	state.rData = null
-	// 	return {...state}
-	// }
 	else if (action.type === 'SET_LOCATION') {
 		////////////////////location
 		if (location === 'home')

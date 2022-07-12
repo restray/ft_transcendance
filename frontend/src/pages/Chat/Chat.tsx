@@ -4,7 +4,9 @@ import ProfilBox, { NameWithMenu } from '../../component/ProfilBox';
 import chat from '../../images/chat.svg'
 import arrow from '../../images/arrow.svg'
 import menu from '../../images/menu.svg'
-import friendAdd from '../../images/friendAdd.svg'
+import bin from '../../images/bin.svg'
+import add from '../../images/friendAdd.svg'
+import block from '../../images/block.svg'
 import useContextMenu from '../../lib/generateMenu';
 import InvisibleInput from '../../component/InvisibleInput';
 import { useSearchParams } from 'react-router-dom';
@@ -12,60 +14,78 @@ import ChatUi from './Message';
 import { ChannelParameter } from './Settings';
 import { AnimatePresence, motion } from 'framer-motion'
 import AllChannel, { CreateServerModal } from './AllChannel';
-import { ChatContext, ChatProvider, ChatValue, RoomData } from '../../context/chatContext';
+import { ChatContext, ChatProvider, ChatValue, RoomData, User } from '../../context/chatContext';
+import { Friend, FriendsContext, FriendsContextValue } from '../../context/friendsContext';
 
-function FriendListFriend({name, pending}: {name: string, pending?: boolean}) {
+function FriendListFriend({user, state}: {user: User, state: 'WAITING' | 'SEND_WAITING' | 'ACCEPTED' | 'BLOCKED'}) {
 
-	var [searchParams, setSearchParams] = useSearchParams()
+	const {chatLink} = useContext(ChatContext) as ChatValue
+	const {acceptFriend, removeLink} = useContext(FriendsContext) as FriendsContextValue
 
-	function onClick() {
-		if (pending) {
-			console.log('accept ' + name + ' as friend')
-			return
-		}
-		searchParams.set('p_msg', name)
-		setSearchParams(searchParams, {replace: true})
+	var image = (()=>{
+		if (state === 'WAITING') return add
+		if (state === 'SEND_WAITING') return bin
+		if (state === 'BLOCKED') return block
+		return chat
+	})()
+	var event = (()=>{
+		if (state === 'SEND_WAITING' || state === 'BLOCKED') return removeLinkEvent
+		if (state === 'WAITING') return acceptFriendEvent
+		return ()=>{}
+	})()
+	// addFriend,
+	// blockUser,
+	// acceptFriend,
+	// removeLink
+	function acceptFriendEvent() {
+		acceptFriend(user.id)
+	}
+	function removeLinkEvent() {
+		removeLink(user.id)
 	}
 
 	return (
-		<div className='FriendList__friend' onClick={onClick}>
+		<div className='FriendList__friend' onClick={event}>
 			<div className='FriendList__friend__profile'>
-				<div className='FriendList__friend__profile__image' />
-				{/* <NameWithMenu name={name} /> */}
+				<img src={user.avatar} alt='' className='FriendList__friend__profile__image' />
+				<NameWithMenu user={user} link={chatLink} />
 			</div>
-			{pending ?
-			<img className='FriendList__friend__chat' src={friendAdd} alt=''/>
-			:
-			<img className='FriendList__friend__chat' src={chat} alt=''/>
-			}
+			<img className='FriendList__friend__chat' src={image} alt=''/>
 		</div>
 	)
 }
 
-function FriendList({friends}: {friends: any[]}) {
+function FriendList() {
+	const {state: {friends} } = useContext(FriendsContext) as FriendsContextValue
 
 	return (
 		<div className='FriendList--container'>
 			<div className='FriendList'>
 				<h1>Friend list</h1>
-				<p>Pending: </p>
-				{friends.map((friend: any, index: number)=>{
-					if (friend.status === 'WAITING')
-						return <FriendListFriend key={index} name={friend.receiver.name} pending={true}/>
-					return null
-				})}
 				<p>Friends: </p>
-				{friends.map((friend: any, index: number)=>{
-					if (friend.status === 'ACCEPTED')
-						return <FriendListFriend key={index} name={friend.receiver.name}/>
+				{friends.map((friend: Friend, index: number)=>{
+					if (friend.state === 'ACCEPTED')
+						return <FriendListFriend key={index} user={friend.user} state={'ACCEPTED'}/>
 					return null
 				})}
-				{/* <p>BLOCKED: </p>
-				{friends.map((friend: any)=>{
-					if (friend.status === 'BLOCKED' && friend.requester.name === '')
-						return <FriendListFriend name={friend.receiver.name}/>
-					return <></>
-				})} */}
+				<p>Request received: </p>
+				{friends.map((friend: Friend, index: number)=>{
+					if (friend.state === 'WAITING')
+						return <FriendListFriend key={index} user={friend.user} state={'WAITING'}/>
+					return null
+				})}
+				<p>Request sended: </p>
+				{friends.map((friend: Friend, index: number)=>{
+					if (friend.state === 'SEND_WAITING')
+						return <FriendListFriend key={index} user={friend.user} state={'SEND_WAITING'}/>
+					return null
+				})}
+				<p>Blocked: </p>
+				{friends.map((friend: Friend, index: number)=>{
+					if (friend.state === 'BLOCKED')
+						return <FriendListFriend key={index} user={friend.user} state={'BLOCKED'}/>
+					return null
+				})}
 			</div>
 		</div>
 	)
@@ -259,7 +279,7 @@ function Loader({loaded}: {loaded: Map<string, boolean>}) {
 
 export default function Chat() {
 
-	const {content: {friends, rData, state: {location}}, loaded, setOpen} = useContext(ChatContext) as ChatValue
+	const {content: {rData, state: {location}}, loaded} = useContext(ChatContext) as ChatValue
 
 	function isFullLoad() {
 		for (var value of loaded.values()) {
@@ -290,7 +310,7 @@ export default function Chat() {
 								</div>
 						</ChannelContextMenu>}
 
-						{getChannelRoute(location, friends, rData)}
+						{getChannelRoute(location, rData)}
 					</div>
 				</>}
 			</div>
@@ -298,28 +318,28 @@ export default function Chat() {
 	)
 }
 
-function getChannelRoute(route: string | null, friends: any[], rData: RoomData | null) {
+function getChannelRoute(route: string | null, rData: RoomData | null) {
 
 	if (rData === null || route === null || route === 'home')
-		return (<ChatHome friends={friends}/>)
+		return (<ChatHome/>)
 	else if (route === 'room/home')
 		return (<ChatChannelHome rData={rData}/>)
 	else if (route === 'room/settings')
 		return (<ChatChannelParameter />)
 	else if (route === 'room/join')
 		return (<ChatChannelJoin />)
-	return (<ChatHome friends={friends}/>)
+	return (<ChatHome/>)
 }
 		
 
 /* pages */
-function ChatHome({friends}: {friends: any[]}) {
+function ChatHome() {
 
 	var [searchParams] = useSearchParams()
 
 	return (
 		<div className='Chat__right__room'>
-		{searchParams.has('p_msg') ? <ChatUi /> : <FriendList friends={friends}/>}
+		{searchParams.has('p_msg') ? <ChatUi /> : <FriendList />}
 		</div>
 	)
 }

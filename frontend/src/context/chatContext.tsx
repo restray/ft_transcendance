@@ -36,8 +36,6 @@ export interface MessageType {
 }
 
 export interface ChatState {
-
-	friends: any[],
 	channels: RoomData[],
 	rData: RoomData | null,
 	state: {
@@ -78,7 +76,6 @@ export interface ChatAction {
 
 export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	const initialeState: ChatState = {
-		friends: [],
 		channels: [],
 		rData: null,
 		state: {
@@ -89,17 +86,10 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	const [chatValue, dispatch] = useReducer(chatReducer, initialeState)
 	const {token, deleteToken, content: user} = useContext(UserContext) as UserContextValue
 	const [loaded] = useState(new Map ([
-		['friends', false],
 		['channels', false],
 	]))
 
 	/* reducer */
-	const setFriends = useCallback(
-	(friends: any[]) => {
-		dispatch({type: "SET_FRIENDS", payload: {friends}
-	});
-	}, [dispatch])
-	
 	const setChannels = useCallback(
 	(channels: RoomData[]) => {
 		dispatch({type: "SET_CHANNELS", payload: {channels}
@@ -137,15 +127,6 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	/* end reducer */
 
 	/* load all datas */
-	useEffect(()=>{
-
-		checkToken(token, 
-			(token: string)=>fetchWithToken<any>({token, deleteToken, url: `/friends`, callback: (data: any)=>{
-				setFriends(data)
-				loaded.set('friends', true)
-			}})
-		)
-	}, [token, setFriends, loaded, deleteToken])
 	
 	useEffect(()=>{
 		
@@ -161,17 +142,7 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 			}
 		}))
 	}, [token, deleteToken])
-
-	// useEffect(() => {
-	// 	var roomId: string | null = searchParams.get('roomId')
-	// 	if (roomId === null)
-	// 		setRoomData(null)
-	// 	else
-	// 		setRoomData(toInteger(roomId))
-	// 	loaded.set('rData', true)
-	// }, [searchParams, setRoomData, loaded])
-	/* end load datas */
-
+	
 	/* events */
 	const createChannel = useCallback(
 		function createChannelCallback(callback: (data: Response)=>void) {
