@@ -41,12 +41,14 @@ export class FriendsService {
           select: {
             id: true,
             name: true,
+            avatar: true,
           },
         },
         receiver: {
           select: {
             id: true,
             name: true,
+            avatar: true,
           },
         },
       },
