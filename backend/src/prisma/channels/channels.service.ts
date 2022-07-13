@@ -9,6 +9,7 @@ import {
 } from '@prisma/client';
 import { hash } from 'argon2';
 import { PrismaService } from '../prisma.service';
+import { UserPublicInformations } from '../user/user.public.interface';
 
 @Injectable()
 export class ChannelsService {
@@ -30,13 +31,7 @@ export class ChannelsService {
       include: {
         users: {
           include: {
-            user: {
-              select: {
-                name: true,
-                avatar: true,
-                id: true,
-              },
-            },
+            user: UserPublicInformations,
           },
         },
         messages: {
@@ -84,13 +79,7 @@ export class ChannelsService {
       include: {
         users: {
           include: {
-            user: {
-              select: {
-                name: true,
-                avatar: true,
-                id: true,
-              },
-            },
+            user: UserPublicInformations,
           },
         },
         messages: {
@@ -100,13 +89,7 @@ export class ChannelsService {
           take,
           skip: start,
           include: {
-            User: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              },
-            },
+            User: UserPublicInformations,
           },
         },
       },
@@ -183,13 +166,7 @@ export class ChannelsService {
             userId: user.id,
           },
           include: {
-            user: {
-              select: {
-                name: true,
-                avatar: true,
-                id: true,
-              },
-            },
+            user: UserPublicInformations,
           },
         },
       },
