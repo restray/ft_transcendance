@@ -250,7 +250,7 @@ export class FriendsController {
   @Post('/:id/accept')
   @UseGuards(Jwt2FAGuard)
   @ApiOperation({ summary: "Accepter une demande d'ami d'un utilisateur" })
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     description: 'La demande a bien été acceptée',
   })
   @ApiBadRequestResponse({
