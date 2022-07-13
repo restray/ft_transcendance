@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import RightClickMenu from './component/rightClickMenu';
 import { ChatProvider } from './context/chatContext';
+import { FriendsContext, FriendsContextProvider } from './context/friendsContext';
 import { RightClickMenuProvider } from './context/rightClickMenu';
 import { UserContextProvider } from './context/userContext';
 
@@ -21,14 +22,14 @@ root.render(
 	<BrowserRouter>
 		<RightClickMenuProvider>
 			<UserContextProvider>
-				<ChatProvider>
-				{/* <React.StrictMode> */}
-				<>
-					<App />
-					<RightClickMenu />
-				</>
-				{/* </React.StrictMode> */}
-				</ChatProvider>
+				<FriendsContextProvider>
+					<ChatProvider>
+					<>
+						<App />
+						<RightClickMenu />
+					</>
+					</ChatProvider>
+				</FriendsContextProvider>
 			</UserContextProvider>
 		</RightClickMenuProvider>
 	</BrowserRouter>
