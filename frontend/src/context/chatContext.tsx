@@ -54,7 +54,8 @@ export interface ChatValue {
 	leaveChannel: (id: number, callback?: (data: any)=>(void))=>void
 	deleteChannel: (id: number, callback?: (statusCode: number, statusText: string)=>(void))=>void,
 	setOpen: (direction: boolean)=>void,
-	chatLink: (location: string)=>void
+	chatLink: (location: string)=>void,
+	openPrivateMessage: (userId: number)=>void
 }
 
 interface PayloadChatAction extends ChatState {
@@ -144,6 +145,11 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	}, [token, deleteToken])
 	
 	/* events */
+	function openPrivateMessage(userId: number) {
+		setOpen(true)
+		setLocation('privateMessage', userId)
+	}
+
 	const createChannel = useCallback(
 		function createChannelCallback(callback: (data: Response)=>void) {
 			console.log('hey creating channel, please wait...')
@@ -314,7 +320,8 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		leaveChannel: leaveChannel,
 		deleteChannel: deleteChannel,
 		setOpen: setOpen,
-		chatLink: chatLink
+		chatLink: chatLink,
+		openPrivateMessage: openPrivateMessage
 	}
 	return (
 		<ChatContext.Provider value={value}>

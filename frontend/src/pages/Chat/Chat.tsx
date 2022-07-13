@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import ModalBox from '../../component/ModalBox';
 import ProfilBox, { NameWithMenu } from '../../component/ProfilBox';
-import chat from '../../images/chat.svg'
 import arrow from '../../images/arrow.svg'
+import unblock from '../../images/unblock.svg'
 import menu from '../../images/menu.svg'
 import bin from '../../images/bin.svg'
-import add from '../../images/friendAdd.svg'
-import block from '../../images/block.svg'
+import addFriendSvg from '../../images/friendAdd.svg'
+import send from '../../images/send.svg'
 import useContextMenu from '../../lib/generateMenu';
 import InvisibleInput from '../../component/InvisibleInput';
 import { useSearchParams } from 'react-router-dom';
@@ -17,22 +17,31 @@ import AllChannel, { CreateServerModal } from './AllChannel';
 import { ChatContext, ChatProvider, ChatValue, RoomData, User } from '../../context/chatContext';
 import { Friend, FriendsContext, FriendsContextValue } from '../../context/friendsContext';
 
-function FriendListFriend({user, state}: {user: User, state: 'WAITING' | 'SEND_WAITING' | 'ACCEPTED' | 'BLOCKED'}) {
+function FriendListFriend({friend, friend: {user}, state}: {friend: Friend, state: 'WAITING' | 'SEND_WAITING' | 'ACCEPTED' | 'BLOCKED'}) {
 
-	const {chatLink} = useContext(ChatContext) as ChatValue
+	const {chatLink, openPrivateMessage} = useContext(ChatContext) as ChatValue
 	const {acceptFriend, removeLink} = useContext(FriendsContext) as FriendsContextValue
 
-	var image = (()=>{
-		if (state === 'WAITING') return add
-		if (state === 'SEND_WAITING') return bin
-		if (state === 'BLOCKED') return block
-		return chat
+	var menu = (()=>{
+		var link = friend.state
+		if (link === 'WAITING') 
+			return (
+				<div>
+					<img className='FriendList__friend__event' src={addFriendSvg} alt='' onClick={acceptFriendEvent}/>
+					<img className='FriendList__friend__event' src={bin} alt='' onClick={removeLinkEvent}/>
+				</div>
+			)
+		if (link === 'SEND_WAITING')
+			return (<img className='FriendList__friend__event' src={bin} alt='' onClick={removeLinkEvent}/>)
+		if (link === 'BLOCKED')
+			return (<img className='FriendList__friend__event' src={unblock} alt='' onClick={removeLinkEvent}/>)
+		return (
+			<>
+				<img className='FriendList__friend__event' src={send} alt='' onClick={openPrivateMessageEvent}/>
+			</>
+		)
 	})()
-	var event = (()=>{
-		if (state === 'SEND_WAITING' || state === 'BLOCKED') return removeLinkEvent
-		if (state === 'WAITING') return acceptFriendEvent
-		return ()=>{}
-	})()
+
 	// addFriend,
 	// blockUser,
 	// acceptFriend,
@@ -43,14 +52,17 @@ function FriendListFriend({user, state}: {user: User, state: 'WAITING' | 'SEND_W
 	function removeLinkEvent() {
 		removeLink(user.id)
 	}
+	function openPrivateMessageEvent() {
+		openPrivateMessage(user.id)
+	}
 
 	return (
-		<div className='FriendList__friend' onClick={event}>
+		<div className='FriendList__friend'>
 			<div className='FriendList__friend__profile'>
 				<img src={user.avatar} alt='' className='FriendList__friend__profile__image' />
 				<NameWithMenu user={user} link={chatLink} />
 			</div>
-			<img className='FriendList__friend__chat' src={image} alt=''/>
+			{menu}
 		</div>
 	)
 }
@@ -65,25 +77,25 @@ function FriendList() {
 				<p>Friends: </p>
 				{friends.map((friend: Friend, index: number)=>{
 					if (friend.state === 'ACCEPTED')
-						return <FriendListFriend key={index} user={friend.user} state={'ACCEPTED'}/>
+						return <FriendListFriend key={index} friend={friend} state={'ACCEPTED'}/>
 					return null
 				})}
 				<p>Request received: </p>
 				{friends.map((friend: Friend, index: number)=>{
 					if (friend.state === 'WAITING')
-						return <FriendListFriend key={index} user={friend.user} state={'WAITING'}/>
+						return <FriendListFriend key={index} friend={friend} state={'WAITING'}/>
 					return null
 				})}
 				<p>Request sended: </p>
 				{friends.map((friend: Friend, index: number)=>{
 					if (friend.state === 'SEND_WAITING')
-						return <FriendListFriend key={index} user={friend.user} state={'SEND_WAITING'}/>
+						return <FriendListFriend key={index} friend={friend} state={'SEND_WAITING'}/>
 					return null
 				})}
 				<p>Blocked: </p>
 				{friends.map((friend: Friend, index: number)=>{
 					if (friend.state === 'BLOCKED')
-						return <FriendListFriend key={index} user={friend.user} state={'BLOCKED'}/>
+						return <FriendListFriend key={index} friend={friend} state={'BLOCKED'}/>
 					return null
 				})}
 			</div>
@@ -320,14 +332,16 @@ export default function Chat() {
 
 function getChannelRoute(route: string | null, rData: RoomData | null) {
 
-	if (rData === null || route === null || route === 'home')
+	if (route === null || route === 'home')
 		return (<ChatHome/>)
-	else if (route === 'room/home')
+	else if (route === 'room/home' && rData)
 		return (<ChatChannelHome rData={rData}/>)
 	else if (route === 'room/settings')
 		return (<ChatChannelParameter />)
 	else if (route === 'room/join')
 		return (<ChatChannelJoin />)
+	else if (route === 'privateMessage')
+		return (<ChatPrivateMessage />)
 	return (<ChatHome/>)
 }
 		
@@ -339,11 +353,19 @@ function ChatHome() {
 
 	return (
 		<div className='Chat__right__room'>
-		{searchParams.has('p_msg') ? <ChatUi /> : <FriendList />}
+		<FriendList />
 		</div>
 	)
 }
 
+function ChatPrivateMessage() {
+
+	return (
+		<div className='Chat__right__room'>
+			<ChatUi />
+		</div>
+	)
+}
 
 function ChatChannelHome({rData}: {rData: RoomData}) {
 

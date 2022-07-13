@@ -1,7 +1,7 @@
 import React, {createContext, useReducer, useCallback, useState, useEffect, useContext} from 'react';
 import { protectedFetch } from '../lib/fetchImprove';
 import { friendsReducer } from '../reducer/FriendsReducer';
-import { User } from './chatContext';
+import { MessageType, User } from './chatContext';
 import { UserContext, UserContextValue } from './userContext';
 export const FriendsContext = createContext<FriendsContextValue | null>(null);
 
@@ -10,7 +10,8 @@ export interface FriendsState {
 }
 export interface Friend {
 	user: User,
-	state: string
+	state: FriendStatus,
+	message: MessageType[]
 }
 
 export interface FriendsContextValue {
@@ -19,6 +20,8 @@ export interface FriendsContextValue {
 	blockUser: (user: User, onSuccess?: (res: Response)=>void)=>void,
 	acceptFriend: (userId: number, onSuccess?: (res: Response)=>void)=>void,
 	removeLink: (userId: number, onSuccess?: (res: Response)=>void)=>void,
+	getFriendLink: (userId: number)=>FriendStatus | null,
+	//send pm
 }
 
 export type FriendStatus = 'WAITING' | 'SEND_WAITING' | 'BLOCKED' | 'ACCEPTED'
@@ -66,6 +69,10 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 			dispatch({type: "UPDATE_FRIEND", payload: {userId, status}
 		});
 		}, [dispatch])
+
+	//update status
+	//add pm
+	//update receive/ unreceive/ friend leave friend request
 	/* end reducer */
 
 	/* start dl */
@@ -76,23 +83,30 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 			url: '/friends', method: 'GET',
 			onSuccess: (res: Response)=>{
 				res.json().then((data: any)=>{
+					console.log(data)
 					var allFriends: Friend[] = []
 					data.forEach((friend: any)=>{
 						var nFriend: Friend | null = null
-						if (friend.receiver.id !== user.id) {
-							nFriend = {
-								user: {id: friend.receiver.id, name: friend.receiver.name, avatar: friend.receiver.avatar},
-								state: friend.status
-							}
-						}
-						else { //user is the receiver!
+						if (friend.receiver.id === user.id) {
 							nFriend = {
 								user: {
 									id: friend.requester.id,
 									name: friend.requester.name,
 									avatar: friend.requester.avatar
 								},
-								state: friend.status
+								state: friend.status,
+								message: [] //friend.requester.messages
+							}
+						}
+						else { //user is the receiver!
+							nFriend = {
+								user: {
+									id: friend.receiver.id,
+									name: friend.receiver.name,
+									avatar: friend.receiver.avatar
+								},
+								state: friend.status,
+								message: [] //friend.receiver.messages
 							}
 							if (nFriend.state === "WAITING")
 								nFriend.state = "SEND_WAITING"
@@ -110,10 +124,10 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 	function addFriend(user: User, onSuccess?: (res: Response)=>void) {
 		protectedFetch({
 			token, deleteToken,
-			url: `/friends/${user.id}`, method: 'WAITING',
+			url: `/friends/${user.id}`, method: 'POST',
 			onSuccess: (res: Response)=>{
 				if (res.status === 201) {
-					var nFriend: Friend = {user: user, state: 'WAITING'}
+					var nFriend: Friend = {user: user, state: 'SEND_WAITING', message: []}
 					addFriendReducer(nFriend)
 				}
 				if (onSuccess) onSuccess(res)
@@ -123,10 +137,10 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 	function blockUser(user: User, onSuccess?: (res: Response)=>void) {
 		protectedFetch({
 			token, deleteToken,
-			url: `/friends/${user.id}/block`, method: 'POST',
+			url: `/friends/${user.id}/block`, method: 'DELETE',
 			onSuccess: (res: Response)=>{
 				if (res.status === 200) {
-					var nFriend: Friend = {user: user, state: 'BLOCKED'}
+					var nFriend: Friend = {user: user, state: 'BLOCKED', message: []}
 					addFriendReducer(nFriend)
 				}
 				if (onSuccess) onSuccess(res)
@@ -138,7 +152,7 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 			token, deleteToken,
 			url: `/friends/${userId}/accept`, method: 'POST',
 			onSuccess: (res: Response)=>{
-				if (res.status === 200) {
+				if (res.status === 201) { //@WARNING 201 must be 200
 					updateFriend(userId, 'ACCEPTED')
 				}
 				if (onSuccess) onSuccess(res)
@@ -158,13 +172,20 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 		})
 	}
 	/* end actions */
+	function getFriendLink(userId: number): FriendStatus | null {
+		var finded = friendsValue.friends.find((friend: Friend)=> friend.user.id === userId)
+		if (finded === undefined)
+			return null
+		return finded.state
+	}
 
 	const value: FriendsContextValue = {
 		state: friendsValue,
 		addFriend,
 		blockUser,
 		acceptFriend,
-		removeLink
+		removeLink,
+		getFriendLink
 	}
 	return (
 		<FriendsContext.Provider value={value}>
