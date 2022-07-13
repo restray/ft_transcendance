@@ -33,6 +33,7 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 	}
 	else if (action.type === 'SET_LOCATION') {
 		////////////////////location
+		state.state.open = true
 		if (location === 'home') {
 			state.state.location = 'home'
 			state.rData = null
@@ -53,6 +54,11 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 			state.state.location = 'privateMessage'
 			state.rData = null
 		}
+		else if (location === 'joinRoom' && id) {
+			state = {...setRoomData(state, id)}
+			if (state.rData)
+				state.state.location = 'room/join'
+		}
 		////////////////////location
 		return {...state}
 	}
@@ -70,6 +76,9 @@ function setRoomData(state: ChatState, id: number): ChatState {
 	if (finded)
 		state.rData = finded
 	else
+	{
 		state.state.location = 'home'
+		state.rData = null
+	}
 	return {...state}
 }

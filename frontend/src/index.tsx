@@ -29,7 +29,7 @@ root.render(
 						<RightClickMenu />
 					</>
 					</ChatProvider>
-				</FriendsContextProvider>
+				</FriendsContextProvider> 
 			</UserContextProvider>
 		</RightClickMenuProvider>
 	</BrowserRouter>

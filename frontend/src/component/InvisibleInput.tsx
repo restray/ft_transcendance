@@ -28,8 +28,8 @@ export function InvisibleInputSelect({name, choices, isLock=false, setSelected, 
 		</div>
 	)
 }
-export default function InvisibleInput({name, value, setValue, isLock=false}
-: {name: string, value: string, setValue: (value: string)=>void, isLock?: boolean}) {
+export default function InvisibleInput({name, value, setValue, isLock=false, error}
+: {name: string, value: string, setValue: (value: string)=>void, isLock?: boolean, error?: boolean}) {
 
 	const [isFocus, setIsFocus] = useState<boolean>(false)
 
@@ -43,6 +43,7 @@ export default function InvisibleInput({name, value, setValue, isLock=false}
 			<div className='InvisibleInput__container'>
 				{(isFocus) && <div className='InvisibleInput--bg'></div>}
 				{(isLock) && <div className='InvisibleInput--lock'></div>}
+				{(error) && <div className='InvisibleInput--error'></div>}
 				<input
 				className='InvisibleInput__input'
 				onFocus={()=>setIsFocus(true)}

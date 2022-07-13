@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { NameWithMenu } from '../component/ProfilBox'
-import Page404 from './Page404'
+import PageError from './Page404'
 import addFriendSvg from '../images/friendAdd.svg'
 import settings from '../images/settings.svg'
 import bin from '../images/bin.svg'
@@ -86,6 +86,7 @@ export default function Profile() {
 	const [state, setState] = useState<'loading' | 'valid' | 'invalid'>('loading')
 	const [user, setUser] = useState<User>({name: '', avatar: '', id: 0})
 	const {acceptFriend, removeLink, getFriendLink, addFriend, blockUser} = useContext(FriendsContext) as FriendsContextValue
+	var link: FriendStatus | null = getFriendLink(user.id)
 
 	var userId = searchParams.get("userId");
 
@@ -134,12 +135,11 @@ export default function Profile() {
 	var menu = (()=>{
 		if (cUser.id === user.id)
 			return (<img src={settings} alt='' onClick={goSettings}/>)
-		var link: FriendStatus | null = getFriendLink(user.id)
 		if (link === 'WAITING') 
 			return (
 				<>
 					<img src={addFriendSvg} alt='' onClick={acceptFriendEvent}/>
-					<img src={removeFriend} alt='' onClick={removeLinkEvent}/>
+					<img src={bin} alt='' onClick={removeLinkEvent}/>
 				</>
 			)
 		if (link === 'SEND_WAITING') 
@@ -164,12 +164,17 @@ export default function Profile() {
 
 	if (state === 'loading')
 	return (
-		<Page404 message={`Profile is loading`} />
+		<PageError message={`Profile is loading`} />
 	)
 	else if (state === 'invalid')
 	return (
-		<Page404 message={`Can't find this profile :(`} />
+		<PageError status={'400'} message={`Can't find this profile :(`} />
 	)
+	else if (link === 'BLOCKED_BY') {
+		return (
+			<PageError message={`This user blocked you o:`} />
+		)
+	}
 	return (
 		<>
 			<div className='ProfilPage'>

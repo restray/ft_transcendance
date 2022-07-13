@@ -1,6 +1,8 @@
+import { toInteger } from 'lodash';
 import React, {createContext, useReducer, useCallback, useContext, useEffect, useState} from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 import { HEADERS } from '..';
 import { BACKEND_HOSTNAME } from '../envir';
 import fetchWithToken, { checkToken, protectedFetch } from '../lib/fetchImprove';
@@ -24,7 +26,6 @@ export interface User {
 	avatar: string,
 	id: number,
 	name: string,
-	// status: string
 }
 export interface ConnectedUser extends User {
 	otp_enable: boolean
@@ -86,6 +87,7 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	}
 	const [chatValue, dispatch] = useReducer(chatReducer, initialeState)
 	const {token, deleteToken, content: user} = useContext(UserContext) as UserContextValue
+	var [searchParams, setSearchParams] = useSearchParams()
 	const [loaded] = useState(new Map ([
 		['channels', false],
 	]))
@@ -142,9 +144,19 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 				loaded.set('channels', true)
 			}
 		}))
-	}, [token, deleteToken])
+	}, [token, deleteToken, loaded, setChannels])
 	
 	/* events */
+	useEffect(()=>{
+		var joinRoomId = searchParams.get('joinRoomId')
+		if (!joinRoomId || !loaded.get('channels'))
+			return
+		console.log(chatValue.channels)
+		setLocation('joinRoom', toInteger(joinRoomId))
+		searchParams.delete('joinRoomId')
+		setSearchParams(searchParams)
+	}, [searchParams, setSearchParams, setLocation, chatValue.channels])
+
 	function openPrivateMessage(userId: number) {
 		setOpen(true)
 		setLocation('privateMessage', userId)
@@ -176,7 +188,7 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 				}
 			})
 		}
-	, [token, deleteToken])
+	, [token, deleteToken, user, addChannel])
 	
 	const leaveChannel = useCallback(
 	function leaveChannelCallback(id: number, callback?: (data: any)=>void) {
@@ -233,7 +245,7 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 
 		if(!ioChannels)
 			return
-		console.log(ioChannels)
+		console.log('Chat socket connected')
 		
 		ioChannels.on("connect", () => {
 			console.info("Socket channels connected!")
@@ -305,7 +317,7 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 						addMessage({content: message, User: user}, id)
 				});
 			}
-	}, [ioChannels, chatValue.rData])
+	}, [ioChannels, chatValue.rData, addMessage, user])
 	
 	/* end sockets */
 

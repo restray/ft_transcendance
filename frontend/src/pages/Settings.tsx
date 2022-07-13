@@ -6,6 +6,7 @@ import InvisibleInput, { InvisibleInputSelect } from '../component/InvisibleInpu
 import SaveBox, { ErrorBox } from '../component/SaveBox'
 import { ConnectedUser, User } from '../context/chatContext'
 import { UserContext, UserContextValue } from '../context/userContext'
+import { BACKEND_HOSTNAME } from '../envir'
 import { protectedFetch } from '../lib/fetchImprove'
 
 export interface ConnectedUserWithImg extends ConnectedUser {
@@ -14,7 +15,7 @@ export interface ConnectedUserWithImg extends ConnectedUser {
 
 export default function Settings() {
 	
-	const {content, updateProfile, token, deleteToken} = useContext(UserContext) as UserContextValue
+	const {content, updateProfile, token, deleteToken, enable2fa} = useContext(UserContext) as UserContextValue
 	const [user, setUser] = useState<ConnectedUserWithImg>({name:'',avatar:'',id:0,otp_enable:false,
 	image:null})
 	const [twoFactors, setTwoFactors] = useState<string>('Disable')
@@ -71,14 +72,10 @@ export default function Settings() {
 	/* end udapters */
 	function send2fa() {
 		setLoading(true)
-		protectedFetch({token, deleteToken,
-			url: '/auth/2fa/enable', method: 'POST',
-			body: {code: code2fa},
-			onSuccess: (data: Response)=>{
-				if (data.status !== 200)
-					setError(true)
-				setLoading(false)
-			}
+		enable2fa(code2fa, (res: Response)=>{
+			setLoading(false)
+			if (res.status !== 201)
+				setError(true)
 		})
 	}
 
@@ -102,7 +99,7 @@ export default function Settings() {
 	}
 
 	return (
-		<div className={'ProfilPage'} style={{'backgroundColor': 'black', color: 'white'}}>
+		<div className={'Parameter'} style={{'backgroundColor': 'black', color: 'white'}}>
 			<div className={'ProfilPage__title'}>Settings</div>
 			{loading ?
 			<p>loading...</p>
@@ -112,7 +109,7 @@ export default function Settings() {
 				<img
 				alt="not fount"
 				src={user.image ? URL.createObjectURL(user.image)
-				: content.avatar}
+				: `${BACKEND_HOSTNAME}/${content.avatar}`}
 				onError={resetImage}
 				/>
 				<ImageUploader setSelectedImage={setImage}/>
@@ -122,14 +119,13 @@ export default function Settings() {
 					'Enable',
 					'Disable'
 			]} setSelected={setTwoFactorsEvent} selected={twoFactors} isLock={content.otp_enable}/>
-			{(twoFactors === 'Enable' && img2fa) &&
-			<>
-			<img src={URL.createObjectURL(img2fa)} alt='' />
-			<InvisibleInput name={'Code'} value={code2fa} setValue={setCode2fa}/>
-			<div className={'BigButton'} onClick={send2fa}>Valdiate code</div>
-			</>
+			{(twoFactors === 'Enable' && img2fa && content.otp_enable === false) &&
+			<div className='Parameter__twoFactor'>
+				<img src={URL.createObjectURL(img2fa)} alt='' />
+				<InvisibleInput name={'Code'} value={code2fa} setValue={setCode2fa}/>
+				<div className={'smallButton'} onClick={send2fa}>Valdiate code</div>
+			</div>
 			}
-			
 			{modified && <SaveBox onReset={reset} onSave={updateProfileEvent}/>}
 			{error && <ErrorBox/>}
 			</>

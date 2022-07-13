@@ -1,6 +1,4 @@
-notif settings
-better connection pages + with 2fa
-settings 2fa part as seperate component
+==>notif settings
 
 chat reducer: 
 	-user leave/join/promote/demote
@@ -13,7 +11,7 @@ friends context + sockets
 	add friends
 	accept friends
 }
-context menu for profiles in chat, and for channels itself ( am i admin? )
+==>context menu for profiles in chat, and for channels itself ( am i admin? )
 
 verify that mobile version still works well
-modal with loading update
+==>modal with loading update

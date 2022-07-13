@@ -1,0 +1,35 @@
+.Parameter {
+	width: 90%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background-color: white;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	&__twoFactor {
+		width: 80%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-top: 30px;
+		border: 5px dashed white;
+		text-align: center;
+		padding: 0 10%;
+		box-sizing: border-box;
+		input {
+			text-align: center;
+		}
+		img {
+			margin-top: 30px;
+			width: 150px;
+			aspect-ratio: 1/1;
+		}
+	}
+}
+
+@media screen and (max-width: 700px) {
+	.Parameter {
+		width: 100%;
+	}
+}

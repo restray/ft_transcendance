@@ -4,12 +4,15 @@ import MatchMakingButton from "../../component/MatchMakingBox";
 import { NameWithMenu } from "../../component/ProfilBox";
 import { ChatContext, ChatValue, MessageType, User } from "../../context/chatContext";
 import { UserContext, UserContextValue } from "../../context/userContext";
+import { useRoomProfilTools } from "../../context/userMenu";
+import { BACKEND_HOSTNAME } from "../../envir";
 import game from '../../images/game.svg'
 import send from '../../images/send.svg'
 
 function Message({ content, user, direction='left' }: { content: string, user: User, direction?: string }) {
 	
 	const {chatLink} = useContext(ChatContext) as ChatValue
+	const tools = useRoomProfilTools(user)
 
 	if (direction === 'right')
 	{
@@ -18,20 +21,20 @@ function Message({ content, user, direction='left' }: { content: string, user: U
 				<div className='Message__data'>
 					<p className='Message__name Message__right__name'>
 						<span className='Message__date Message__right__date'>11:52</span>
-						<NameWithMenu user={user} link={chatLink}/>
+						<NameWithMenu user={user} link={chatLink} tools={tools}/>
 					</p>
 					<div className='Message__content Message__right__content'>{content}</div>
 				</div>
-			<img src={user.avatar} alt='' className='Message__image Message__right__image' />
+			<img src={`${BACKEND_HOSTNAME}/${user.avatar}`} alt='' className='Message__image Message__right__image' />
 			</div>
 		)
 	}
 	return (
 		<div className='Message'>
-			<img src={user.avatar} alt='' className='Message__image Message__left__image' />
+			<img src={`${BACKEND_HOSTNAME}/${user.avatar}`} alt='' className='Message__image Message__left__image' />
 			<div className='Message__data'>
 				<p className='Message__name'>
-					<NameWithMenu user={user} link={chatLink}/>
+					<NameWithMenu user={user} link={chatLink} tools={tools}/>
 					<span className='Message__date Message__left__date'>11:52</span>
 				</p>
 				<div className='Message__content Message__left__content'>{content}</div>
@@ -40,27 +43,32 @@ function Message({ content, user, direction='left' }: { content: string, user: U
 	)
 }
 
-function MessageSystem({user, content}: {user: string, content: string}) {
+// function MessageSystem({user, content}: {user: string, content: string}) {
 
-	return (
-		<div className='MessageSystem'>
-			{/* <NameWithMenu name={user} /> */}
-			<span style={{whiteSpace: 'pre'}}>{` ${content}`}</span>
-		</div>
-	)
-}
+// 	const {chatLink} = useContext(ChatContext) as ChatValue
+// 	const tools = useRoomProfilTools(user)
+// 	return (
+// 		<div className='MessageSystem'>
+// 			<NameWithMenu name={user} link={chatLink} tools={tools}/>
+// 			<span style={{whiteSpace: 'pre'}}>{` ${content}`}</span>
+// 		</div>
+// 	)
+// }
 
-function MessageGame({user}: {user: string}) {
+// function MessageGame({user}: {user: string}) {
 
-	return (
-		<div className='MessageGame'>
-			<div className='MessageGame__content' style={{whiteSpace: 'pre'}}>
-				<div  className='MessageGame__content__text'>{`${user} want to play!`}</div>
-				<button className='inlineButton'>Join</button>
-			</div>
-		</div>
-	)
-}
+// 	const {chatLink} = useContext(ChatContext) as ChatValue
+// 	const tools = useRoomProfilTools(user)
+// 	return (
+// 		<div className='MessageGame'>
+// 			<div className='MessageGame__content' style={{whiteSpace: 'pre'}}>
+// 				<NameWithMenu name={user} link={chatLink} tools={tools}/>
+// 				{/* <div  className='MessageGame__content__text'>{`${user} want to play!`}</div> */}
+// 				<button className='inlineButton'>Join</button>
+// 			</div>
+// 		</div>
+// 	)
+// }
 
 export default function ChatUi() {
 

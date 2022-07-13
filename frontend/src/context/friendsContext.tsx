@@ -24,7 +24,7 @@ export interface FriendsContextValue {
 	//send pm
 }
 
-export type FriendStatus = 'WAITING' | 'SEND_WAITING' | 'BLOCKED' | 'ACCEPTED'
+export type FriendStatus = 'WAITING' | 'SEND_WAITING' | 'BLOCKED' | 'ACCEPTED' | 'BLOCKED_BY'
 
 export interface FriendsActionPayload extends Partial<FriendsState>{
 	userId: number,
@@ -97,6 +97,8 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 								state: friend.status,
 								message: [] //friend.requester.messages
 							}
+							if (nFriend.state === "BLOCKED")
+								nFriend.state = 'BLOCKED_BY'
 						}
 						else { //user is the receiver!
 							nFriend = {

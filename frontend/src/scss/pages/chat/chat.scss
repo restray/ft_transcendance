@@ -140,6 +140,12 @@ $dark-grey: #8F8A8A;
 				background-color: $dark-grey;
 				border-radius: 50%;
 			}
+			&--admin {
+				background-color: red;
+			}
+			&--owner {
+				color: blueviolet;
+			}
 		}
 	}
 	&__openButton {

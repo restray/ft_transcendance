@@ -1,32 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { User } from '../context/chatContext';
+import { ChatContext, ChatValue, User } from '../context/chatContext';
+import { Tool } from '../context/rightClickMenu';
+import { UserContext, UserContextValue } from '../context/userContext';
+import { useProfileTools, useRoomProfilTools } from '../context/userMenu';
 import { BACKEND_HOSTNAME } from '../envir';
 import useContextMenu from '../lib/generateMenu';
 
-export function NameWithMenu({user, link}: {user: User, link?: (location: string)=>void}) {
+export function NameWithMenu({user, link, tools = []}: {user: User, link?: (location: string)=>void, tools?: any[]}) {
+	
+	const {content: cUser} = useContext(UserContext) as UserContextValue
+	let navigate = useNavigate()
 
-	const generateMenu = useContextMenu([
-		{
-			name: 'View profile',
-			func: function renamePage() {
-				console.log(user.name);
-			}
-		},
-		{
-			name: 'Add to friends',
-			func: function renamePage() {
-				console.log('add ' + user.name + ' as friend');
-			}
-		},
-		{
-			name: 'Block user',
-			func: function renamePage() {
-				console.log('block ' + user.name);
-			}
-		}
-	])
-	let navigate = useNavigate();
+	const generateMenu = useContextMenu([...useProfileTools(user, cUser), ...tools])
 	var [searchParams] = useSearchParams();
 	
 	function onClick(e: React.MouseEvent<HTMLElement>) {
@@ -57,7 +43,7 @@ export default function ProfilBox({link ,user, cName='ProfilBox', precClass=''}:
 		<div className={`${cName} ${precClass}`}>
 			<img src={`${BACKEND_HOSTNAME}/${user.avatar}`} alt='' className={`${cName}__image`} />
 			<p className={`${cName}__name`}>
-				<NameWithMenu link={link} user={user}/>
+				<NameWithMenu link={link} user={user} tools={useRoomProfilTools(user)}/>
 			</p>
 		</div>
 	)

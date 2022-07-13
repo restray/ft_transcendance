@@ -60,7 +60,10 @@ export function protectedFetch({onSuccess, onFail, token, deleteToken, url, meth
 	url: string, method?: string, body?: object
 }) {
 	if (!token)
+	{
+		deleteToken()
 		return
+	}
 
 	fetch(`http://localhost:3000${url}`, {
 		method: method,

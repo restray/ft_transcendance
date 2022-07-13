@@ -3,10 +3,11 @@ import BigButton from '../component/BigButton'
 import Game from '../component/Game'
 
 
-export default function Home({ message }: { message: string }) {
+export default function PageError({ message, status }: { message: string, status?: string }) {
 	return (
 		<div className={'Page404'}>
-			<h1>ERROR - 404</h1>
+			{status && <h1>ERROR - {status}</h1>}
+			
 			<p>{message}</p>
 		</div>
 	)

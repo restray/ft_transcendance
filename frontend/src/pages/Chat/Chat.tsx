@@ -16,6 +16,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import AllChannel, { CreateServerModal } from './AllChannel';
 import { ChatContext, ChatProvider, ChatValue, RoomData, User } from '../../context/chatContext';
 import { Friend, FriendsContext, FriendsContextValue } from '../../context/friendsContext';
+import { BACKEND_HOSTNAME } from '../../envir';
+import { useRoomProfilTools } from '../../context/userMenu';
 
 function FriendListFriend({friend, friend: {user}, state}: {friend: Friend, state: 'WAITING' | 'SEND_WAITING' | 'ACCEPTED' | 'BLOCKED'}) {
 
@@ -59,7 +61,7 @@ function FriendListFriend({friend, friend: {user}, state}: {friend: Friend, stat
 	return (
 		<div className='FriendList__friend'>
 			<div className='FriendList__friend__profile'>
-				<img src={user.avatar} alt='' className='FriendList__friend__profile__image' />
+				<img src={`${BACKEND_HOSTNAME}/${user.avatar}`} alt='' className='FriendList__friend__profile__image' />
 				<NameWithMenu user={user} link={chatLink} />
 			</div>
 			{menu}
@@ -148,24 +150,30 @@ function RoomUsers({rData}: {rData: RoomData}) {
 				exit={{ scaleX: 0 }}
 				style={{ transformOrigin: 'center right' }}
 				className='RoomUsers'>
-					{/* <div className='RoomUsers__section'>
+					<div className='RoomUsers__section'>
 						<div className='RoomUsers__section__name'>
 							Super Admin -
 						</div>
-						<ProfilBox name={'pleveque'} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
-					</div> */}
+						{rData.users.map((user: any)=>{
+							if (rData.ownerId === user.user.id)
+								return <ProfilBox link={chatLink} key={user.user.id} user={user.user} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--owner'}/>
+							return null
+						})}
+					</div>
 
 					<div className='RoomUsers__section'>
 						<div className='RoomUsers__section__name'>
 							Admins -
 						</div>
 						{rData.users.map((user: any)=>{
-							console.log(user)
-							if (user.state === 'ADMIN')
-								return <ProfilBox link={chatLink} key={user.user.id} user={user.user} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--red'}/>
+							if (user.state === 'ADMIN' && rData.ownerId !== user.user.id)
+								return <ProfilBox link={chatLink} key={user.user.id}
+								user={user.user} cName={'RoomUsers__section__profile'}
+								precClass={'RoomUsers__section__profile--admin'}/>
 							return null
 						})}
 					</div>
+
 
 					<div className='RoomUsers__section'>
 						<div className='RoomUsers__section__name'>
@@ -183,6 +191,7 @@ function RoomUsers({rData}: {rData: RoomData}) {
 		</div>
 	)
 }
+
 export function ChannelContextMenu({ children, channel, isOnClick=false, roomData }:
 { children: JSX.Element, channel: string, isOnClick?: boolean, roomData: RoomData }) {
 
