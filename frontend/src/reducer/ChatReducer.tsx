@@ -1,7 +1,7 @@
-import { ChatAction, ChatState, RoomData } from "../context/chatContext"
+import { ChatAction, ChatState, RoomData, RoomUser } from "../context/chatContext"
 
 export const chatReducer = (state: ChatState , action: ChatAction ) => {
-	const {location, id, user} = action.payload
+	const {location, id, user, grade, direction} = action.payload
 	if (action.type === 'SET_CHANNELS') {
 		if (action.payload.channels)
 			state.channels = action.payload.channels
@@ -66,6 +66,25 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 		if (typeof(action.payload.direction) === 'boolean') {
 			state.state.open = action.payload.direction
 		}
+		return {...state}
+	}
+	else if (action.type === 'PROMOTE_USER' && id && grade) {
+		var promotedUser = state.rData?.users.find((user: RoomUser)=> user.user.id === id)
+		if (promotedUser)
+			promotedUser.state = grade
+		return {...state}
+	}
+	else if (action.type === 'MUTE_USER' && id && direction !== undefined) {
+		var promotedUser = state.rData?.users.find((user: RoomUser)=> user.user.id === id)
+		if (promotedUser)
+			promotedUser.state = direction ? 'MUTE' : 'USER'
+		return {...state}
+	}
+	else if (action.type === 'BAN_USER' && id && direction !== undefined) {
+		var promotedUser = state.rData?.users.find((user: RoomUser)=> user.user.id === id)
+		if (promotedUser)
+			promotedUser.state = direction ? 'BAN' : 'USER'
+		console.log(promotedUser)
 		return {...state}
 	}
     return state

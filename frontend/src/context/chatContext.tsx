@@ -1,4 +1,4 @@
-import { toInteger } from 'lodash';
+import { find, toInteger } from 'lodash';
 import React, {createContext, useReducer, useCallback, useContext, useEffect, useState} from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
@@ -56,7 +56,11 @@ export interface ChatValue {
 	deleteChannel: (id: number, callback?: (statusCode: number, statusText: string)=>(void))=>void,
 	setOpen: (direction: boolean)=>void,
 	chatLink: (location: string)=>void,
-	openPrivateMessage: (userId: number)=>void
+	openPrivateMessage: (userId: number)=>void,
+	getGradeUser: (userId: number)=>string | null,
+	promoteUser: (userId: number, dir: boolean)=>void,
+	muteUser: (userId: number, dir: boolean)=>void,
+	banUser: (userId: number, dir: boolean)=>void,
 }
 
 interface PayloadChatAction extends ChatState {
@@ -67,7 +71,8 @@ interface PayloadChatAction extends ChatState {
 	location: string,
 	id: number,
 	user: ConnectedUser,
-	direction: boolean
+	direction: boolean,
+	grade: string
 }
 
 export interface ChatAction {
@@ -123,10 +128,29 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	}, [dispatch, user])
 
 	const setOpen = useCallback(
-		(direction: boolean) => {
-			dispatch({type: "SET_OPEN", payload: {direction}
+	(direction: boolean) => {
+		dispatch({type: "SET_OPEN", payload: {direction}
+	});
+	}, [dispatch])
+
+	const promoteUserReducer = useCallback(
+		(grade: string, id: number) => {
+			dispatch({type: "PROMOTE_USER", payload: {grade, id}
 		});
-		}, [dispatch])
+	}, [dispatch])
+
+	const muteUserReducer = useCallback(
+		(id: number, direction: boolean) => {
+			dispatch({type: "MUTE_USER", payload: {direction, id}
+		});
+	}, [dispatch])
+
+	const banUserReducer = useCallback(
+		(id: number, direction: boolean) => {
+			dispatch({type: "BAN_USER", payload: {direction, id}
+		});
+	}, [dispatch])
+		
 	/* end reducer */
 
 	/* load all datas */
@@ -145,6 +169,18 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 			}
 		}))
 	}, [token, deleteToken, loaded, setChannels])
+
+	/* getter */
+	function getGradeUser(userId: number) {
+		if (!chatValue.rData)
+			return null
+		if (userId === chatValue.rData.ownerId)
+			return 'OWNER'
+		var find = chatValue.rData.users.find((user: RoomUser)=> user.user.id === userId)
+		if (find)
+			return find.state
+		return null
+	}
 	
 	/* events */
 	useEffect(()=>{
@@ -235,6 +271,16 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	function chatLink(location: string) {
 		setOpen(false)
 		navigate(`${location}`)
+	}
+
+	function promoteUser(userId: number, dir: boolean) {
+		promoteUserReducer(dir ? 'ADMIN' : 'USER', userId)
+	}
+	function banUser(userId: number, dir: boolean) {
+		banUserReducer(userId, dir)	
+	}
+	function muteUser(userId: number, dir: boolean) {
+		muteUserReducer(userId, dir)	
 	}
 	/* end events */
 
@@ -333,7 +379,11 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		deleteChannel: deleteChannel,
 		setOpen: setOpen,
 		chatLink: chatLink,
-		openPrivateMessage: openPrivateMessage
+		openPrivateMessage: openPrivateMessage,
+		getGradeUser: getGradeUser,
+		promoteUser,
+		banUser,
+		muteUser
 	}
 	return (
 		<ChatContext.Provider value={value}>

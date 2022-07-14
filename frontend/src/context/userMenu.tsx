@@ -96,16 +96,54 @@ export function useRoomProfilTools(user: User) {
 	var tools: Tool[] = []
 	const {} = useContext(FriendsContext) as FriendsContextValue
 	const {content: cUser} = useContext(UserContext) as UserContextValue
-	const {content: rData} = useContext(ChatContext) as ChatValue
+	const {content: {rData}, getGradeUser, promoteUser, banUser, muteUser} = useContext(ChatContext) as ChatValue
 
-	tools.push({
-		name: 'Ban this user',
-		func: function block() {
-			console.log('banned ahah')
-		}
-	})
+	if (!rData)
+		return
 	if (cUser.id === user.id) {
 		return tools
+	}
+	var userGrade = getGradeUser(user.id)
+	if (!userGrade)
+		return
+	console.log(userGrade)
+	/* functions */
+	function promote() {
+		promoteUser(user.id, true)
+	}
+	function demote() {
+		promoteUser(user.id, false)
+	}
+	function ban() {
+		banUser(user.id, true)
+	}
+	function unban() {
+		banUser(user.id, false)
+	}
+	function mute() {
+		muteUser(user.id, true)
+	}
+	function unmute() {
+		muteUser(user.id, false)
+	}
+
+	if (cUser.id === rData.ownerId) {
+		if (userGrade === 'ADMIN') {
+			tools.push({name: 'Demote', func: demote})
+		}
+		else if (userGrade === 'USER') {
+			tools.push({name: 'Promote', func: promote})
+		}
+		else if (userGrade === 'MUTE') {
+			tools.push({name: 'Unmute', func: unmute})
+		}
+		else if (userGrade === 'BAN') {
+			tools.push({name: 'Unban', func: unban})
+		}
+		if (userGrade !== 'BAN' && userGrade !== 'MUTE')
+			tools.push({name: 'Mute for 12 hours', func: mute})
+		if (userGrade !== 'BAN')
+			tools.push({name: 'Ban', func: ban})
 	}
 	return tools
 }
