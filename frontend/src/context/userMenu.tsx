@@ -106,7 +106,6 @@ export function useRoomProfilTools(user: User) {
 	var userGrade = getGradeUser(user.id)
 	if (!userGrade)
 		return
-	console.log(userGrade)
 	/* functions */
 	function promote() {
 		promoteUser(user.id, true)
@@ -127,6 +126,23 @@ export function useRoomProfilTools(user: User) {
 		muteUser(user.id, false)
 	}
 
+	function saveUser() {
+		if (userGrade === 'MUTE') {
+			tools.push({name: 'Unmute', func: unmute})
+		}
+		else if (userGrade === 'BAN') {
+			tools.push({name: 'Unban', func: unban})
+		}
+	}
+	function sanction(maxGrade: string) {
+		if (maxGrade === 'USER' && userGrade !== 'USER')
+			return
+		if (userGrade !== 'BAN' && userGrade !== 'MUTE')
+			tools.push({name: 'Mute for 12 hours', func: mute})
+		if (userGrade !== 'BAN')
+			tools.push({name: 'Ban', func: ban})
+	}
+
 	if (cUser.id === rData.ownerId) {
 		if (userGrade === 'ADMIN') {
 			tools.push({name: 'Demote', func: demote})
@@ -134,16 +150,43 @@ export function useRoomProfilTools(user: User) {
 		else if (userGrade === 'USER') {
 			tools.push({name: 'Promote', func: promote})
 		}
-		else if (userGrade === 'MUTE') {
-			tools.push({name: 'Unmute', func: unmute})
+		saveUser()
+		sanction('ADMIN')
+		return tools
+	}
+	var cUserGrade = getGradeUser(cUser.id)
+	if (cUserGrade ) {
+		if (userGrade === 'USER') {
+			tools.push({name: 'Promote', func: promote})
 		}
-		else if (userGrade === 'BAN') {
-			tools.push({name: 'Unban', func: unban})
-		}
-		if (userGrade !== 'BAN' && userGrade !== 'MUTE')
-			tools.push({name: 'Mute for 12 hours', func: mute})
-		if (userGrade !== 'BAN')
-			tools.push({name: 'Ban', func: ban})
+		saveUser()
+		sanction('USER')
+		return tools
+	}
+
+	return tools
+}
+
+
+export function useRoomSettingsTools({rData}: {rData: RoomData}) {
+	var tools: Tool[] = []
+	const {content: cUser} = useContext(UserContext) as UserContextValue
+	const {setLocation} = useContext(ChatContext) as ChatValue
+
+	tools.push({name: 'Create Invitation', func: ()=>{
+
+	}})
+
+	if (cUser.id === rData.ownerId)
+	{
+		tools.push({name: 'Channel Settings', func: ()=>{
+			setLocation('room/settings', rData.id)
+		}})
+	}
+	else {
+		tools.push({name: 'Leave Channel', func: ()=>{
+			// setLeaveModal(true)
+		}})
 	}
 	return tools
 }

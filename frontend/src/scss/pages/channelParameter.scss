@@ -55,6 +55,24 @@ $error: rgb(182, 29, 29);
 		background-color: black;
 		border-top: 5px solid white;
 	}
+	&__deleteChannel {
+		background-color: rgb(182, 29, 29);
+		color: white;
+		padding: 10px 20px;
+		border-radius: 3px;
+		font-size: 18px;
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+		margin-top: 30px;
+		img {
+			padding-left: 10px;
+		}
+		transition: transform 0.1s ease-out;
+		&:hover {
+			transform: scale(1.05);
+		}
+	}
 }
 
 .InvisibleInput {
@@ -64,6 +82,9 @@ $error: rgb(182, 29, 29);
 	flex-direction: column;
 	width: 100%;
 	user-select: none;
+	select {
+		background-color: black;
+	}
 	&__title {
 		font-size: 20px;
 		padding: 0 10px;

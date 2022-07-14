@@ -7,8 +7,10 @@ import Listing from "../../component/Listing"
 import SaveBox from "../../component/SaveBox"
 import cross from '../../images/cross.svg'
 import Modal from "../../component/Modal"
-import { ChatContext, ChatValue } from "../../context/chatContext"
+import { ChatContext, ChatValue, RoomUser } from "../../context/chatContext"
 import { CreateServerModal } from "./AllChannel"
+import { UserContext, UserContextValue } from "../../context/userContext"
+import bin from '../../images/bin.svg'
 
 type ServerProtection = 'Private' | 'Protected' | 'Public'
 
@@ -17,17 +19,14 @@ interface RoomOpt {
 	name: string,
 	serverProtection: string,
 	pass: string,
-	admin: string[],
-	muted: string[],
-	banned: string[]
+	admin: RoomUser[],
+	muted: RoomUser[],
+	banned: RoomUser[]
 }
 
 function SaveProtection({modal, setModal, onQuit, onSave}
 : {modal: boolean, setModal: (a: boolean)=>void, onQuit: ()=>void, onSave: ()=>void}) {
 
-	function close() {
-		setModal(false)
-	}
 	return (
 		<Modal open={modal} setOpen={setModal}>
 			<div className='ModalBox' style={{overflow:'unset'}}>
@@ -43,22 +42,27 @@ export function ChannelParameter() {
 
 	const [global, setGlobal] = useState<RoomOpt>({
 		image: 'https://pierreevl.vercel.app/image/logo.jpg',
-		name: 'Super name for room',
-		serverProtection: 'Public',
+		name: '',
+		serverProtection: '',
 		pass: '',
-		admin: ['pleveque0', 'pleveque1', 'pleveque2'],
-		muted: ['pleveque0', 'pleveque1', 'pleveque2'],
-		banned: ['pleveque0', 'pleveque1', 'pleveque2']
+		admin: [],
+		muted: [],
+		banned: []
 	})
 	const [local, setLocal] = useState<RoomOpt>({image: '', name: '',serverProtection: 'Private',pass: '',admin: [],muted: [],banned: []})
 	const [modified, setModified] = useState<boolean>(false)
 	const {setLocation, content: {rData}, deleteChannel} = useContext(ChatContext) as ChatValue
+	const {content: cUser} = useContext(UserContext) as UserContextValue
 
 	useEffect(() => {
 
 		if (!rData)
 			return
 		global.name = rData.name
+		global.serverProtection = rData.type
+		global.admin = rData.users.filter((user: RoomUser)=> user.state === 'ADMIN' && user.user.id !== cUser.id)
+		global.muted = rData.users.filter((user: RoomUser)=> user.state === 'MUTE')
+		global.banned = rData.users.filter((user: RoomUser)=> user.state === 'BAN')
 		setGlobal({...global})
 	},
 	[rData])
@@ -98,15 +102,15 @@ export function ChannelParameter() {
 		local.serverProtection = value
 		setLocal({...local})
 	}
-	function setAdmin(admins: string[]) {
+	function setAdmin(admins: RoomUser[]) {
 		local.admin = admins
 		setLocal({...local})
 	}
-	function setMuted(muteds: string[]) {
+	function setMuted(muteds: RoomUser[]) {
 		local.muted = muteds
 		setLocal({...local})
 	}
-	function setBanned(banneds: string[]) {
+	function setBanned(banneds: RoomUser[]) {
 		local.banned = banneds
 		setLocal({...local})
 	}
@@ -187,7 +191,10 @@ export function ChannelParameter() {
 				<Listing name={'Muted'} data={local.muted} setData={setMuted}/>
 				<Listing name={'Banned'} data={local.banned} setData={setBanned}/>
 
-				<div onClick={openDeleteModal}>DELETE CHANNEL</div>
+				<div onClick={openDeleteModal} className='ChannelParameter__deleteChannel'>
+					DELETE CHANNEL
+					<img src={bin} alt=''/>
+				</div>
 				<CreateServerModal modal={deleteModal} setModal={setDeleteModal}
 				isLoading={isLoading} error={error}
 				onCreate={eventDeleteChannel} message={`Do you really want to delete "${rData?.name}"?`}

@@ -6,8 +6,9 @@ import { getWindowDimensions } from "./Chat"
 import { motion } from 'framer-motion'
 import arrow from '../../images/arrow.svg'
 
-function RoomUsersSection({rData, chatLink, gradeName, gradeColor = '', gradeTitle}:
-{rData: RoomData, chatLink: (loc: string)=>void, gradeName: string, gradeColor?: string, gradeTitle: string}) {
+function RoomUsersSection({rData, chatLink, gradeName, gradeTitle}:
+{rData: RoomData, chatLink: (loc: string)=>void, gradeName: string, gradeTitle: string}) {
+	const {getGradeColor} = useContext(ChatContext) as ChatValue
 	
 	return (
 
@@ -19,7 +20,7 @@ function RoomUsersSection({rData, chatLink, gradeName, gradeColor = '', gradeTit
 				if (user.state === gradeName && rData.ownerId !== user.user.id)
 					return <ProfilBox link={chatLink} key={user.user.id}
 					user={user.user} cName={'RoomUsers__section__profile'}
-					precClass={gradeColor}/>
+					color={getGradeColor(user.user.id)}/>
 				return null
 			})}
 		</div>
@@ -30,7 +31,7 @@ export function RoomUsers() {
 
 	const [windowDimensions] = useState(getWindowDimensions())
 	const [open, setOpen] = useState<boolean>(false)
-	const {chatLink, content: {rData}} = useContext(ChatContext) as ChatValue
+	const {chatLink, content: {rData}, getGradeColor} = useContext(ChatContext) as ChatValue
 
 	useEffect(()=>{
 		if (windowDimensions.width > 700)
@@ -61,13 +62,13 @@ export function RoomUsers() {
 						</div>
 						{rData.users.map((user: any)=>{
 							if (rData.ownerId === user.user.id)
-								return <ProfilBox link={chatLink} key={user.user.id} user={user.user} cName={'RoomUsers__section__profile'} precClass={'RoomUsers__section__profile--owner'}/>
+								return <ProfilBox link={chatLink} key={user.user.id} user={user.user} cName={'RoomUsers__section__profile'}
+								color={getGradeColor(user.user.id)}/>
 							return null
 						})}
 					</div>
 					
-					<RoomUsersSection rData={rData} chatLink={chatLink} gradeName={'ADMIN'} gradeTitle={'Admin'}
-					gradeColor={'RoomUsers__section__profile--admin'}/>
+					<RoomUsersSection rData={rData} chatLink={chatLink} gradeName={'ADMIN'} gradeTitle={'Admin'}/>
 					<RoomUsersSection rData={rData} chatLink={chatLink} gradeName={'USER'} gradeTitle={'User'}/>
 					<RoomUsersSection rData={rData} chatLink={chatLink} gradeName={'MUTE'} gradeTitle={'Muted'}/>
 					<RoomUsersSection rData={rData} chatLink={chatLink} gradeName={'BAN'} gradeTitle={'Banned'}/>

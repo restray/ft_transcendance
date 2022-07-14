@@ -7,7 +7,8 @@ import { useProfileTools, useRoomProfilTools } from '../context/userMenu';
 import { BACKEND_HOSTNAME } from '../envir';
 import useContextMenu from '../lib/generateMenu';
 
-export function NameWithMenu({user, link, tools = []}: {user: User, link?: (location: string)=>void, tools?: any[]}) {
+export function NameWithMenu({user, link, tools = [], color = 'black'}:
+{user: User, link?: (location: string, qParams?: string)=>void, tools?: any[], color?: string}) {
 	
 	const {content: cUser} = useContext(UserContext) as UserContextValue
 	let navigate = useNavigate()
@@ -20,7 +21,7 @@ export function NameWithMenu({user, link, tools = []}: {user: User, link?: (loca
 		searchParams.set('userId', String(user.id))
 
 		if (link) {
-			link(`/profile?${searchParams}`)
+			link(`/profile`, `userId=${user.id}`)
 			return
 		}
 		navigate(`/profile?${searchParams}`)
@@ -31,19 +32,20 @@ export function NameWithMenu({user, link, tools = []}: {user: User, link?: (loca
 		className={'NameWithMenu'}
 		onContextMenu={(e)=>generateMenu(e)}
 		onClick={onClick}
+		style={{color}}
 		>
 			{user.name}
 		</span>
 	)
 }
 
-export default function ProfilBox({link ,user, cName='ProfilBox', precClass=''}:
-{  link?: (location: string)=>void, user: User, cName?: string, precClass?: string }) {
+export default function ProfilBox({link ,user, cName='ProfilBox', precClass='', color = 'black'}:
+{  link?: (location: string)=>void, user: User, cName?: string, precClass?: string, color?: string }) {
 	return (
 		<div className={`${cName} ${precClass}`}>
 			<img src={`${BACKEND_HOSTNAME}/${user.avatar}`} alt='' className={`${cName}__image`} />
 			<p className={`${cName}__name`}>
-				<NameWithMenu link={link} user={user} tools={useRoomProfilTools(user)}/>
+				<NameWithMenu color={color} link={link} user={user} tools={useRoomProfilTools(user)}/>
 			</p>
 		</div>
 	)

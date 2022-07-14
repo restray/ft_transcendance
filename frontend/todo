@@ -1,8 +1,8 @@
 ==>notif settings
 
 chat reducer: 
-	-user leave/join/promote/demote
-for channel settings: requet to get additional data (all muted and banned and admin playersgi)
+	-user leave/join
+
 friends context + sockets
 {
 	pm
@@ -11,7 +11,8 @@ friends context + sockets
 	add friends
 	accept friends
 }
-==>context menu for profiles in chat, and for channels itself ( am i admin? )
 
 verify that mobile version still works well
 ==>modal with loading update
+
+// invitation

@@ -54,10 +54,10 @@ function ChatBubble({ roomData, setLocation }
 
 export default function AllChannel() {
 
-	const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions())
+	const [windowDimensions] = useState(getWindowDimensions())
 	const [open, setOpen] = useState<boolean>(false)
 	const [createModal, setCreateModal] = useState<boolean>(false)
-	const {content: {channels}, createChannel, setLocation} = useContext(ChatContext) as ChatValue
+	const {content: {channels}, createChannel, setLocation, setOpen: closeChat} = useContext(ChatContext) as ChatValue
 
 	/* responsive */
 	
@@ -83,9 +83,7 @@ export default function AllChannel() {
 		setLocation('home')
 	}
 	function leaveChat() {
-		searchParams = sanitizeQuery(searchParams)
-		searchParams.delete('chat')
-		setSearchParams(searchParams)
+		closeChat(false)
 	}
 	function openModal(e: React.MouseEvent<HTMLElement>) {
 		e.stopPropagation()

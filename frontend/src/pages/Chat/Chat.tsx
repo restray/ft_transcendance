@@ -16,8 +16,17 @@ import AllChannel, { CreateServerModal } from './AllChannel';
 import { ChatContext, ChatProvider, ChatValue, RoomData, User } from '../../context/chatContext';
 import { Friend, FriendsContext, FriendsContextValue } from '../../context/friendsContext';
 import { BACKEND_HOSTNAME } from '../../envir';
-import { useRoomProfilTools } from '../../context/userMenu';
+import { useRoomProfilTools, useRoomSettingsTools } from '../../context/userMenu';
 import { RoomUsers } from './Room';
+
+export function FriendColorStatus({children, friend}: {children: React.ReactElement, friend: Friend}) {
+
+	return (
+		<div className={`FriendStatus--${friend.status}`}>
+			{children}
+		</div>
+	)
+}
 
 function FriendListFriend({friend, friend: {user}, state}: {friend: Friend, state: 'WAITING' | 'SEND_WAITING' | 'ACCEPTED' | 'BLOCKED'}) {
 
@@ -38,9 +47,8 @@ function FriendListFriend({friend, friend: {user}, state}: {friend: Friend, stat
 		if (link === 'BLOCKED')
 			return (<img className='FriendList__friend__event' src={unblock} alt='' onClick={removeLinkEvent}/>)
 		return (
-			<>
-				<img className='FriendList__friend__event' src={send} alt='' onClick={openPrivateMessageEvent}/>
-			</>
+			<img className='FriendList__friend__event' src={send} alt=''
+			onClick={openPrivateMessageEvent}/>
 		)
 	})()
 
@@ -61,7 +69,10 @@ function FriendListFriend({friend, friend: {user}, state}: {friend: Friend, stat
 	return (
 		<div className='FriendList__friend'>
 			<div className='FriendList__friend__profile'>
-				<img src={`${BACKEND_HOSTNAME}/${user.avatar}`} alt='' className='FriendList__friend__profile__image' />
+				<FriendColorStatus friend={friend}>
+					<img src={`${BACKEND_HOSTNAME}/${user.avatar}`} alt='' className='FriendList__friend__profile__image' />
+				</FriendColorStatus>
+			
 				<NameWithMenu user={user} link={chatLink} />
 			</div>
 			{menu}
@@ -125,28 +136,9 @@ function ChannelJoin() {
 export function ChannelContextMenu({ children, channel, isOnClick=false, roomData }:
 { children: JSX.Element, channel: string, isOnClick?: boolean, roomData: RoomData }) {
 
-	const {leaveChannel, setLocation} = useContext(ChatContext) as ChatValue
+	const {leaveChannel} = useContext(ChatContext) as ChatValue
 
-	const generateMenu = useContextMenu([
-		{
-			name: 'Create Invitation',
-			func: function renamePage() {
-				console.log("weq");
-			}
-		},
-		{
-			name: 'Channel settings',
-			func: function renamePage() {
-				setLocation('room/settings', roomData.id)
-			}
-		},
-		{
-			name: 'Leave channel',
-			func: function leaveChannel() {
-				setLeaveModal(true)
-			}
-		}
-	])
+	const generateMenu = useContextMenu([...useRoomSettingsTools({rData: roomData})])
 
 	/* modals */
 	const [leaveModal, setLeaveModal] = useState<boolean>(false)
@@ -168,20 +160,10 @@ export function ChannelContextMenu({ children, channel, isOnClick=false, roomDat
 				setLeaveModal(false)
 		})
 	}
-	// if (isOnClick)
-	// 	return (
-	// 		<div
-	// 		onContextMenu={(e)=>generateMenu(e)}
-	// 		onClick={(e)=>generateMenu(e)}
-	// 		>
-	// 			{leaveModal && <CreateServerModal modal={leaveModal} setModal={setLeaveModal}
-	// 				onCreate={onClickLeaveChannel} message={`Do you really want to leave "${roomData.name}"?`}
-	// 			title={'Leave room'} />}
-	// 			{children}
-	// 		</div>
-	// 	)
 	return (
-		<div onContextMenu={(e)=>generateMenu(e)}>
+		<div onContextMenu={(e)=>generateMenu(e)} onClick={(e)=>{
+			if (isOnClick) generateMenu(e)
+		}}>
 			<CreateServerModal modal={leaveModal} setModal={setLeaveModal}
 				isLoading={isLoading} error={error}
 				onCreate={onClickLeaveChannel} message={`Do you really want to leave "${roomData.name}"?`}
@@ -288,8 +270,6 @@ function getChannelRoute(route: string | null, rData: RoomData | null) {
 /* pages */
 function ChatHome() {
 
-	var [searchParams] = useSearchParams()
-
 	return (
 		<div className='Chat__right__room'>
 		<FriendList />
@@ -320,7 +300,6 @@ function ChatChannelParameter() {
 	return (
 		<div className='Chat__right__room'>
 		<ChannelParameter />
-		{/* <RoomUsers /> */}
 		</div>
 	)
 }

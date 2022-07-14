@@ -10,6 +10,7 @@ export interface FriendsState {
 }
 export interface Friend {
 	user: User,
+	status: FriendState,
 	state: FriendStatus,
 	message: MessageType[]
 }
@@ -25,6 +26,7 @@ export interface FriendsContextValue {
 }
 
 export type FriendStatus = 'WAITING' | 'SEND_WAITING' | 'BLOCKED' | 'ACCEPTED' | 'BLOCKED_BY'
+export type FriendState = 'ONLINE' | 'OFFLINE' | 'PLAYING'
 
 export interface FriendsActionPayload extends Partial<FriendsState>{
 	userId: number,
@@ -95,7 +97,8 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 									avatar: friend.requester.avatar
 								},
 								state: friend.status,
-								message: [] //friend.requester.messages
+								message: [], //friend.requester.messages
+								status: friend.requester.status
 							}
 							if (nFriend.state === "BLOCKED")
 								nFriend.state = 'BLOCKED_BY'
@@ -108,7 +111,8 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 									avatar: friend.receiver.avatar
 								},
 								state: friend.status,
-								message: [] //friend.receiver.messages
+								message: [], //friend.receiver.messages
+								status: friend.receiver.status
 							}
 							if (nFriend.state === "WAITING")
 								nFriend.state = "SEND_WAITING"
@@ -129,7 +133,7 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 			url: `/friends/${user.id}`, method: 'POST',
 			onSuccess: (res: Response)=>{
 				if (res.status === 201) {
-					var nFriend: Friend = {user: user, state: 'SEND_WAITING', message: []}
+					var nFriend: Friend = {user: user, state: 'SEND_WAITING', message: [], status: 'OFFLINE'}
 					addFriendReducer(nFriend)
 				}
 				if (onSuccess) onSuccess(res)
@@ -142,7 +146,7 @@ export const FriendsContextProvider = ( {children}: { children: JSX.Element} ) =
 			url: `/friends/${user.id}/block`, method: 'DELETE',
 			onSuccess: (res: Response)=>{
 				if (res.status === 200) {
-					var nFriend: Friend = {user: user, state: 'BLOCKED', message: []}
+					var nFriend: Friend = {user: user, state: 'BLOCKED', message: [], status: 'OFFLINE'}
 					addFriendReducer(nFriend)
 				}
 				if (onSuccess) onSuccess(res)

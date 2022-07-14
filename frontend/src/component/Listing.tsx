@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import menu from '../images/menu.svg'
 import bin from '../images/bin.svg'
+import { RoomUser } from '../context/chatContext'
 
 export default function Listing({name, data, setData}:
-{name: string, data: string[], setData: (arg0: string[])=>(void)}) {
+{name: string, data: RoomUser[], setData: (arg0: RoomUser[])=>(void)}) {
 
 	const [expanded, setExpanded] = useState<boolean>(false)
 	const [selected, setSelected] = useState<number[]>([])
@@ -41,8 +42,8 @@ export default function Listing({name, data, setData}:
 	}
 
 	function deleteSelf(elem: number) {
-		var newArr: string[] = data
-		newArr = newArr.filter((value: string, index: number): boolean=>{ 
+		var newArr: RoomUser[] = data
+		newArr = newArr.filter((value: RoomUser, index: number): boolean=>{ 
 			return (index !== elem)
 		})
 		setSelectallChecked(false)
@@ -55,8 +56,8 @@ export default function Listing({name, data, setData}:
 	}
 
 	function deleteSelected() {
-		var newArr: string[] = data
-		newArr = newArr.filter((value: string, index: number): boolean=>{ 
+		var newArr: RoomUser[] = data
+		newArr = newArr.filter((RoomUser: RoomUser, index: number): boolean=>{ 
 			return !selected.includes(index)
 		})
 		setSelectallChecked(false)
@@ -97,9 +98,9 @@ export default function Listing({name, data, setData}:
 					exit={{ scaleY:0, height: 0 }}
 					style={{ transformOrigin: 'top center' }}
 					>
-						{data.map((elem: string, index: number)=> 
+						{data.map((elem: RoomUser, index: number)=> 
 						<div key={index} className='Listing__element' onClick={()=>selectSelf(index)}>
-							{elem}
+							{elem.user.name}
 							<div className='Listing__name__images'>
 								<input 
 								type="checkbox" 

@@ -55,9 +55,10 @@ export interface ChatValue {
 	leaveChannel: (id: number, callback?: (data: any)=>(void))=>void
 	deleteChannel: (id: number, callback?: (statusCode: number, statusText: string)=>(void))=>void,
 	setOpen: (direction: boolean)=>void,
-	chatLink: (location: string)=>void,
+	chatLink: (location: string, qParams?: string)=>void,
 	openPrivateMessage: (userId: number)=>void,
 	getGradeUser: (userId: number)=>string | null,
+	getGradeColor: (userId: number)=>string,
 	promoteUser: (userId: number, dir: boolean)=>void,
 	muteUser: (userId: number, dir: boolean)=>void,
 	banUser: (userId: number, dir: boolean)=>void,
@@ -181,6 +182,14 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 			return find.state
 		return null
 	}
+	function getGradeColor(userId: number) {
+		var grade = getGradeUser(userId)
+		if (grade === 'OWNER') return 'blueviolet'
+		if (grade === 'ADMIN') return 'red'
+		if (grade === 'USER') return 'blue'
+		if (grade === 'MUTE') return 'yellow'
+		return 'green'
+	}
 	
 	/* events */
 	useEffect(()=>{
@@ -191,12 +200,15 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		setLocation('joinRoom', toInteger(joinRoomId))
 		searchParams.delete('joinRoomId')
 		setSearchParams(searchParams)
-	}, [searchParams, setSearchParams, setLocation, chatValue.channels])
+	}, [searchParams, setSearchParams, setLocation, chatValue.channels, loaded])
 
-	function openPrivateMessage(userId: number) {
-		setOpen(true)
-		setLocation('privateMessage', userId)
-	}
+	const openPrivateMessage = useCallback(
+		function openPrivateMessage(userId: number) {
+			searchParams.set('chat', 'open')
+			setSearchParams(searchParams)
+			setLocation('privateMessage', userId)
+		}
+	, [searchParams, setSearchParams, setLocation])
 
 	const createChannel = useCallback(
 		function createChannelCallback(callback: (data: Response)=>void) {
@@ -268,13 +280,30 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		}, [token, deleteToken, removeChannel])
 
 	const navigate = useNavigate()
-	function chatLink(location: string) {
-		setOpen(false)
-		navigate(`${location}`)
-	}
+	const chatLink = useCallback(
+		function chatLink(location: string, qParams?: string) {
+			searchParams.delete('chat')
+			searchParams.set('blabla', 'eqw')
+			if (qParams)
+				console.log(qParams)
+			navigate(`${location}/?${qParams}`);
+		}
+	, [navigate])
 
 	function promoteUser(userId: number, dir: boolean) {
+
+		if (!chatValue.rData)
+			return
+		/* todo */
 		promoteUserReducer(dir ? 'ADMIN' : 'USER', userId)
+		// protectedFetch({
+		// 	token, deleteToken,
+		// 	url: `/channels/${chatValue.rData.id}/role`, method: 'PUT',
+		// 	body: {userID: userId, role: dir ? 'ADMIN' : 'USER', userId, until: ''},
+		// 	onSuccess: (res: Response)=>{
+		// 	},
+		// 	onFail: (e: any)=>console.log(e)
+		// })
 	}
 	function banUser(userId: number, dir: boolean) {
 		banUserReducer(userId, dir)	
@@ -282,6 +311,27 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 	function muteUser(userId: number, dir: boolean) {
 		muteUserReducer(userId, dir)	
 	}
+
+	const  openWithSearchParam = useCallback((dir: boolean)=>{
+		if (dir)
+		{
+			if (searchParams.get('chat'))
+				return
+			searchParams.set('chat', 'open')
+		}
+		else
+			searchParams.delete('chat')
+		setSearchParams(searchParams)
+	}, [searchParams, setSearchParams])
+
+	useEffect(()=>{
+		var isOpen = searchParams.get('chat')
+		if (isOpen === 'open')
+			setOpen(true)
+		else
+			setOpen(false)
+	}, [searchParams, setOpen])
+
 	/* end events */
 
 	/* sockets */
@@ -377,10 +427,11 @@ export const ChatProvider = ( {children}: { children: JSX.Element} ) => {
 		setLocation: setLocation,
 		leaveChannel: leaveChannel,
 		deleteChannel: deleteChannel,
-		setOpen: setOpen,
+		setOpen: openWithSearchParam,
 		chatLink: chatLink,
 		openPrivateMessage: openPrivateMessage,
 		getGradeUser: getGradeUser,
+		getGradeColor,
 		promoteUser,
 		banUser,
 		muteUser

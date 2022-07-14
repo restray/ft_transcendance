@@ -140,12 +140,6 @@ $dark-grey: #8F8A8A;
 				background-color: $dark-grey;
 				border-radius: 50%;
 			}
-			&--admin {
-				color: red;
-			}
-			&--owner {
-				color: blueviolet;
-			}
 		}
 	}
 	&__openButton {
@@ -196,6 +190,12 @@ $dark-grey: #8F8A8A;
 		padding: 10px 20px;
 		box-sizing: border-box;
 		cursor:text;
+		&--muted {
+			background-color: $dark-grey;
+			textarea {
+				background-color: $dark-grey;
+			}
+		}
 		textarea {
 			flex-grow: 1;
 			resize: none;

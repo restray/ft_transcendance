@@ -26,7 +26,7 @@ export const chatReducer = (state: ChatState , action: ChatAction ) => {
 		{
 			var r = state.channels.find(room=> room.id === action.payload.roomId)
 			if (r)
-				r.messages = [action.payload.message, ...r.messages]
+				r.messages.push(action.payload.message)
 			console.log(r)
 		}
 		return {...state}
