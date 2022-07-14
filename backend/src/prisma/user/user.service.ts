@@ -103,4 +103,38 @@ export class UserService implements OnModuleInit {
       },
     });
   }
+
+  async retrieveAllUserData() {
+    return this.prisma.user.findMany({
+      include: {
+        channels: {
+          include: {
+            messages: true,
+            channel: true,
+          },
+        },
+        channelsOwner: true,
+        friendProposal: true,
+        friendRequest: true,
+        DMChannelUser: {
+          include: {
+            dmChannel: {
+              include: {
+                DMChannelUser: {
+                  include: {
+                    user: true,
+                  },
+                },
+                DMChannelMessage: {
+                  include: {
+                    User: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }

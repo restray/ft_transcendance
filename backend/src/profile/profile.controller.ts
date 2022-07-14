@@ -15,6 +15,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiConsumes,
+  ApiExcludeEndpoint,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -26,6 +27,7 @@ import { unlink } from 'fs';
 import multer from 'multer';
 import path from 'path';
 import Jwt2FAGuard from 'src/auth/guards/jwt-2fa.guard';
+import { LocalEnvGuard } from 'src/dev/local-env.guard';
 import UserPublic from 'src/prisma/user/user.public.interface';
 import { localUploadToURL, UserService } from 'src/prisma/user/user.service';
 import { EditProfileDTO } from './dto/profile.dto';
@@ -129,6 +131,13 @@ export class ProfileController {
     req.user.name = newPseudo;
     req.user.avatar = newImage;
     return await this.userService.updateUser(req.user);
+  }
+
+  @Get('/data')
+  @ApiExcludeEndpoint()
+  @UseGuards(LocalEnvGuard)
+  async getAllData() {
+    return await this.userService.retrieveAllUserData();
   }
 
   @Get('/:id')
