@@ -1,6 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsBooleanString,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class EditProfileDTO {
   @IsString()
@@ -24,8 +30,9 @@ export class EditProfileDTO {
   @ApiProperty({
     name: 'otp_enabled',
     description: "Etat du 2FA pour l'utilisateur",
-    example: 'false',
   })
-  @Transform(({ value }) => value === 'true')
+  @Transform(({ value }) => {
+    return value === 'true' || value === true || value === 1 || value === '1';
+  })
   otp_enabled: boolean;
 }

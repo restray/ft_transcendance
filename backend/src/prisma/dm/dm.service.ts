@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DMChannel, Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { UserPublicInformations } from '../user/user.public.interface';
 
 @Injectable()
 export class DmService {
@@ -15,6 +16,22 @@ export class DmService {
           },
         },
       },
+      include: {
+        DMChannelMessage: {
+          include: {
+            DMChannelUser: {
+              include: {
+                user: UserPublicInformations,
+              },
+            },
+          },
+        },
+        DMChannelUser: {
+          include: {
+            user: UserPublicInformations,
+          },
+        },
+      },
     });
   }
 
@@ -25,13 +42,7 @@ export class DmService {
         DMChannelMessage: true,
         DMChannelUser: {
           include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              },
-            },
+            user: UserPublicInformations,
           },
         },
       },

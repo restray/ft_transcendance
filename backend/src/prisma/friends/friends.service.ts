@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { FriendShipStatus, Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { UserPublicInformations } from '../user/user.public.interface';
 
 @Injectable()
 export class FriendsService {
@@ -13,18 +14,8 @@ export class FriendsService {
       },
       select: {
         status: true,
-        requester: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        receiver: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        requester: UserPublicInformations,
+        receiver: UserPublicInformations,
       },
     });
   }
@@ -37,20 +28,8 @@ export class FriendsService {
       },
       select: {
         status: true,
-        requester: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-        receiver: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
+        requester: UserPublicInformations,
+        receiver: UserPublicInformations,
       },
     });
   }
