@@ -9,25 +9,22 @@ import { localUploadToURL } from './user.service';
 
 function getObject(theObject) {
   const result = theObject;
-  if (theObject instanceof Array) {
-    for (let i = 0; i < theObject.length; i++) {
-      theObject[i] = getObject(theObject[i]);
+  if (result instanceof Array) {
+    for (let i = 0; i < result.length; i++) {
+      result[i] = getObject(result[i]);
     }
   } else {
-    for (const prop in theObject) {
+    for (const prop in result) {
       if (prop == 'avatar') {
-        theObject[prop] = localUploadToURL(theObject[prop]);
+        result[prop] = localUploadToURL(result[prop]);
         continue;
       }
-      if (prop in ['password', 'otp_secret']) {
-        delete theObject[prop];
+      if (['password', 'otp_secret'].includes(prop)) {
+        delete result[prop];
         continue;
       }
-      if (
-        theObject[prop] instanceof Object ||
-        theObject[prop] instanceof Array
-      ) {
-        result[prop] = getObject(theObject[prop]);
+      if (result[prop] instanceof Object || result[prop] instanceof Array) {
+        result[prop] = getObject(result[prop]);
       }
     }
   }
@@ -39,8 +36,7 @@ export class UserfieldsInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((data) => {
-        data = getObject(data);
-        return data;
+        return getObject(data);
       }),
     );
   }
