@@ -49,6 +49,9 @@ export class GameGateway implements NestGateway {
   connectedUsers: Array<number>;
 
   afterInit(server) {
+    this.games = [];
+    this.connectedUsers = [];
+
     const middle = WSAuthMiddleware(
       this.jwtService,
       this.userService,
@@ -68,7 +71,8 @@ export class GameGateway implements NestGateway {
     // We only allow one client per user to play/watch a game
     if (this.isUserAlreadyConnected(client.user)) {
       client.disconnect();
-      throw new WsException('Already logged in on another client');
+      return;
+      // throw new WsException('Already logged in on another client');
     }
 
     this.connectedUsers.push(client.user.id);
@@ -106,7 +110,7 @@ export class GameGateway implements NestGateway {
     const client_game = new GameRoom(
       !isMatchMakingEnabled,
       this.server,
-      client,
+      client.user,
     );
     this.games.push(client_game);
     return client_game.getGame();

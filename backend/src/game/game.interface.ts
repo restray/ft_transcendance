@@ -31,7 +31,7 @@ type PlayerSide = PlayerSideLeft | PlayerSideRight;
 export interface Player {
   position: Position1D;
   points: number;
-  connected: AuthSocket;
+  connected: User;
   ready: boolean;
 }
 
@@ -64,7 +64,7 @@ export class GameRoom {
   constructor(
     private readonly is_private: boolean,
     server: Server,
-    socket: AuthSocket,
+    user: User,
   ) {
     this.id = uuidv4();
     this.server = server.to(this.id);
@@ -83,7 +83,7 @@ export class GameRoom {
       paused: true,
       players: {
         left: {
-          connected: socket,
+          connected: user,
           points: 0,
           ready: false,
           position: {
@@ -95,16 +95,17 @@ export class GameRoom {
       status: 'waiting',
       time_spent: new Date(),
     };
+    this.spectators = [];
   }
 
   public getGame(): GameInformation {
     return this.game;
   }
 
-  private addUser(socket: AuthSocket): UserType {
+  private addUser(user: User): UserType {
     if (this.game.players.right == null) {
       this.game.players.right = {
-        connected: socket,
+        connected: user,
         points: 0,
         position: {
           x: GAME_HEIGHT / 2 - this.pad_height / 2,
@@ -113,7 +114,7 @@ export class GameRoom {
       };
       return 'player';
     }
-    this.spectators.push(socket.user.id);
+    this.spectators.push(user.id);
     return 'spectator';
   }
 
@@ -121,7 +122,7 @@ export class GameRoom {
     socket.join(this.id);
     const side = this.isUserInMatch(socket.user);
     if (!side) {
-      const type = this.addUser(socket);
+      const type = this.addUser(socket.user);
 
       const infos = {
         type,
@@ -134,7 +135,7 @@ export class GameRoom {
       return infos;
     } else {
       this.game.players[side].ready = false;
-      this.game.players[side].connected = socket;
+      this.game.players[side].connected = socket.user;
 
       socket.emit('join', {
         type: 'player',
@@ -146,7 +147,7 @@ export class GameRoom {
 
   /**
    * When an user is disconnected, we pause the game where it played
-   * @param socket AuthSocket
+   * @param socket User
    *
    * @todo Remove game when both users are logouts
    */
@@ -165,12 +166,22 @@ export class GameRoom {
 
   public canPlayerJoin(): boolean {
     if (this.is_private) return false;
-    return this.game.players.right.connected == null;
+    return (
+      !this.game.players.right || this.game.players.right.connected == null
+    );
   }
 
   public isUserInMatch(user: User): PlayerSide | null {
-    if (user.id == this.game.players.left.connected.user.id) return 'left';
-    if (user.id == this.game.players.right.connected.user.id) return 'right';
+    if (
+      this.game.players.left &&
+      user.id == this.game.players.left.connected.id
+    )
+      return 'left';
+    if (
+      this.game.players.right &&
+      user.id == this.game.players.right.connected.id
+    )
+      return 'right';
     return null;
   }
 }
