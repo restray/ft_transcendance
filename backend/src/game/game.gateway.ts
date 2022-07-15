@@ -90,7 +90,7 @@ export class GameGateway implements NestGateway {
     }
 
     // We inform the game room that the client disconnect
-    const userGame = this.games.filter((g) => !g.isUserInMatch(client.user));
+    const userGame = this.games.filter((g) => g.isUserInMatch(client.user));
     if (userGame.length == 1) userGame[0].userDisconnect(client);
   }
 
@@ -100,10 +100,11 @@ export class GameGateway implements NestGateway {
     @ConnectedSocket() client: AuthSocket,
   ) {
     if (isMatchMakingEnabled) {
-      const joinableGames = this.games.filter((game) => game.canPlayerJoin());
+      const joinableGames = this.games.filter((game, index, games) =>
+        games[index].canPlayerJoin(client.user),
+      );
       if (joinableGames.length > 0) {
-        const joinedGame = joinableGames[0];
-        return joinedGame.userConnect(client);
+        return joinableGames[0].userConnect(client);
       }
     }
 

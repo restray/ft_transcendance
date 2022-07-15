@@ -36,9 +36,10 @@ export interface Player {
 }
 
 export type GameWaiting = 'waiting';
+export type GameWaitingStart = 'start';
 export type GamePlaying = 'playing';
 export type GameEnd = 'end';
-type GameStatus = GameWaiting | GamePlaying | GameEnd;
+type GameStatus = GameWaiting | GameWaitingStart | GamePlaying | GameEnd;
 
 // status, scores, time_spent, ball[position, vector, speed], players[2][position]
 export interface GameInformation {
@@ -103,6 +104,9 @@ export class GameRoom {
   }
 
   private addUser(user: User): UserType {
+    if (this.isUserInMatch(user)) {
+      return 'player';
+    }
     if (this.game.players.right == null) {
       this.game.players.right = {
         connected: user,
@@ -123,21 +127,21 @@ export class GameRoom {
     const side = this.isUserInMatch(socket.user);
     if (!side) {
       const type = this.addUser(socket.user);
-
+      this.game.status = 'start';
       const infos = {
         type,
         side: type == 'player' ? 'right' : null,
         game: this.game,
       };
 
-      socket.emit('join', infos);
+      this.server.emit('join', infos);
 
       return infos;
     } else {
       this.game.players[side].ready = false;
       this.game.players[side].connected = socket.user;
 
-      socket.emit('join', {
+      this.server.emit('join', {
         type: 'player',
         side,
         game: this.game,
@@ -164,11 +168,10 @@ export class GameRoom {
     }
   }
 
-  public canPlayerJoin(): boolean {
+  public canPlayerJoin(user: User): boolean {
+    if (this.isUserInMatch(user)) return true;
     if (this.is_private) return false;
-    return (
-      !this.game.players.right || this.game.players.right.connected == null
-    );
+    return !this.game.players.right || !this.game.players.right.connected;
   }
 
   public isUserInMatch(user: User): PlayerSide | null {
