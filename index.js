@@ -129,9 +129,60 @@ handleChannelsMessages = (BearerToken) => {
     
 }
 
+handleGame = (BearerToken) => {
+    let game;
+
+    document.getElementById("joinGame").addEventListener("click", (e) => {
+        game = io("ws://localhost:3000/games", { auth: { token: BearerToken }});
+    
+        game.on("connect", () => {
+            console.info("Socket game is connected!");
+            document.getElementById("gameStatus").innerHTML = "Waiting";
+            game.emit("new", {match_making: "true"}, (game) => {
+                console.log(game);
+            });
+        });
+        game.on('connect_error', err => handleErrors(err))
+        game.on('connect_failed', err => handleErrors(err))
+
+        game.on("disconnect", () => {
+            console.info("Socket game is disconnected!");
+            document.getElementById("gameStatus").innerHTML = "Disconnected";
+        });
+
+        game.on("join", (info) => {
+            console.log("join", info);
+            if (info.game.players["left"])
+                document.getElementById("gamePlayer1").innerHTML = info.game.players["left"].connected.name;
+            if (info.game.players["right"])
+                document.getElementById("gamePlayer2").innerHTML = info.game.players["right"].connected.name;
+            let status = info.game.status + (info.game.paused ? " (paused)" : "");
+            document.getElementById("gameStatus").innerHTML = status;
+        })
+
+        game.on("pause", (game) => {
+            let status = game.status + (game.paused ? " (paused)" : "");
+            document.getElementById("gameStatus").innerHTML = status;
+        })
+    });
+
+    document.getElementById("disconnectGame").addEventListener("click", (e) => {
+        game.disconnect();
+        game = null;
+    })
+
+    // createGame
+    // privateGameId
+    // joinPrivateGame
+    // gamePlayer1
+    // gamePlayer2
+    // gameStatus
+}
+
 document.getElementById('login').addEventListener("click", (event) => {
     const BearerToken = document.getElementById('token').value;
 
     handleFriendsStatus(BearerToken);
     handleChannelsMessages(BearerToken);
+    handleGame(BearerToken);
 });

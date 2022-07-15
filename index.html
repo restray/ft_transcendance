@@ -50,6 +50,27 @@
         <button id="createDmChannel">Create Channel</button>
     </div>
 
+    <hr>
+
+    <div>
+        <h3>Game</h3>
+        <div>
+            <button id="joinGame">Join a game with match making</button> <button id="disconnectGame">Disconnect
+                game</button> <br>
+            <button id="createGame">Create a private game</button>
+            <input type="text" name="" id="privateGameId">
+            <button id="joinPrivateGame">Join a private game</button>
+        </div>
+        <hr>
+        <p>
+            player1: <span id="gamePlayer1"></span> <br>
+            player2: <span id="gamePlayer2"></span>
+        </p>
+        <p>
+            Game status <span id="gameStatus"></span>
+        </p>
+    </div>
+
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"
         integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H"
         crossorigin="anonymous"></script>
