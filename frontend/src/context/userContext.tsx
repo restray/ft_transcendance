@@ -116,6 +116,7 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 		if (code)
 		{
 			setLoading(true)
+			console.log(`login with ${code}`)
 			fetch(`http://localhost:3000/auth/login?code=${code}`, {
 				headers: {
 					'Content-Type': 'application/json;charset=UTF-8',
@@ -136,6 +137,11 @@ export const UserContextProvider = ( {children}: { children: JSX.Element} ) => {
 					else
 						setToken(data.access_token)
 				}
+				else 
+					setLoading(false)
+			})
+			.catch(()=>{
+				setLoading(false)
 			})
 		}
 		searchParams.delete('code')

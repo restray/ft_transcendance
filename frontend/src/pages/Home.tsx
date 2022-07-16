@@ -5,6 +5,7 @@ import MatchMakingButton from '../component/MatchMakingBox'
 
 
 export default function Home() {
+
 	return (
 		<div className={'home'}>
 			<MatchMakingButton>

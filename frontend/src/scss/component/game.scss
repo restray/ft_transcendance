@@ -1,8 +1,98 @@
 .gameArena {
 
+	position: relative;
 	width: 100%;
-	max-width: 1000px;
 	outline:0;
 	overflow: hidden;
-	// aspect-ratio: 2 / 1;
+	width: 100%;
+	aspect-ratio: 2/1;
+	cursor: zoom-in;
+	&--container {
+		width: 100%;
+	}
+	&__players {
+		color: white;
+		display: flex;
+		justify-content: space-between;
+		padding: 20px 0;
+		&__profile {
+			display: flex;
+			align-items: center;
+			&__image {
+				width: 50px;
+				aspect-ratio: 1/1;
+				background-color: green;
+				border-radius: 50%;
+			}
+			&__name {
+				margin: 0 20px;
+				font-size: 35px;
+			}
+		}
+	}
+}
+
+.bigArena {
+
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.innerArena {
+	width: 90%;
+	position: relative;
+}
+.padLeft {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 50%;
+}
+.padRight {
+	position: absolute;
+	right: 0;
+	top: 0;
+	height: 100%;
+	width: 50%;
+}
+
+@media screen and (max-width: 700px) {
+	.gameArena {
+
+		&__players {
+			padding: 15px 0;
+			&__profile {
+				&__image {
+					width: 30px;
+				}
+				&__name {
+					margin: 0 15px;
+					font-size: 18px;
+				}
+			}
+		}
+		&--container {
+			width: 100%;
+			height: 100%;
+		}
+	}
+
+	.innerArena {
+		transform: rotate(90deg);
+		height: 80vw;
+		width: auto;
+		max-width: 100vh;
+		aspect-ratio: 2/1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.bigArena {
+		// height: 100vw;
+		position: relative;
+	}
 }
